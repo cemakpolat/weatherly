@@ -6,14 +6,14 @@ on:
   pull_request:
     branches: [ "main", "develop" ]
 
-permissions:
-  contents: write # Required to upload release assets
-  issues: write   # Required to create or update issues
-  pull-requests: write # Needed for release-drafter
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to upload release assets
+      issues: write   # Required to create or update issues
+      pull-requests: write # Needed for release-drafter
 
     steps:
       - name: Checkout code
