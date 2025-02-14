@@ -9,86 +9,59 @@ jobs:
   build-windows:
     name: Build Windows
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
+      - run: npm install
+      - run: npm run build:win
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build Windows package
-        run: npm run build:win
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Windows artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: windows-build
           path: dist/*.exe
-          retention-days: 3
 
   build-macos:
     name: Build macOS
     runs-on: macos-latest
+    permissions:
+      contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
+      - run: npm install
+      - run: npm run build:mac
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build macOS package
-        run: npm run build:mac
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload macOS artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: macos-build
           path: dist/*.dmg
-          retention-days: 3
 
   build-linux:
     name: Build Linux
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
+      - run: npm install
+      - run: npm run build:linux
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build Linux package
-        run: npm run build:linux
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: linux-build
           path: dist/*.AppImage
-          retention-days: 3
 
   create-release:
     name: Create Release
@@ -96,27 +69,17 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
+      actions: write
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           path: artifacts
 
-      - name: Create release
-        uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          body: |
-            ### Release Notes
-            - Windows: EXE installer
-            - macOS: DMG package
-            - Linux: AppImage
-            Built from tag ${{ github.ref_name }}
           files: |
             artifacts/windows-build/*
             artifacts/macos-build/*
             artifacts/linux-build/*
           draft: false
-          prerelease: ${{ contains(github.ref_name, '-') }}
