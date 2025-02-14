@@ -32,6 +32,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
+        timeout-minutes: 20 # Increase timeout to 20 minutes
         run: |
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             npm run build:win
