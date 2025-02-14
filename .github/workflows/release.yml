@@ -3,91 +3,82 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*' # Trigger on tags like v1.2.3
+      - 'v*.*.*' # Trigger on semantic version tags
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write  # Needed to create releases
-      packages: write  # If you're publishing packages
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest] # Define OS matrix
+        include:
+          - os: windows
+            runner: windows-latest
+            build_script: build:win
+            artifact_name: windows-build
+          - os: macos
+            runner: macos-latest
+            build_script: build:mac
+            artifact_name: macos-build
+          - os: linux
+            runner: ubuntu-latest
+            build_script: build:linux
+            artifact_name: linux-build
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Build for ${{ matrix.os }}
+      - name: Build application
+        run: npm run ${{ matrix.build_script }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        timeout-minutes: 20 # Increase timeout to 20 minutes
-        run: |
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            npm run build:win
-            BUILD_TARGET="win"
-          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            npm run build:mac
-            BUILD_TARGET="mac"
-          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            npm run build:linux
-            BUILD_TARGET="linux"
-          fi
-      - name: Upload Build Artifacts for ${{ matrix.os }}
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-build
-          path: dist
-          retention-days: 7
+          name: ${{ matrix.artifact_name }}
+          path: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.AppImage
+          retention-days: 3
 
   create-release:
-    needs: release
+    name: Create Release
+    needs: [build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download Windows Build
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: windows-latest-build
-          path: windows-build
+          path: artifacts
 
-      - name: Download macOS Build
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-latest-build
-          path: macos-build
-
-      - name: Download Linux Build
-        uses: actions/download-artifact@v4
-        with:
-          name: ubuntu-latest-build
-          path: linux-build
-
-      - name: Create Release
-        id: create_release
+      - name: Create release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          body_path: CHANGELOG.md # Or a file with release notes, if available
-          draft: false # Change to true for draft releases
-          prerelease: ${{ contains(github.ref_name, '-') }}  # Mark as prerelease if tag contains a hyphen (e.g., v1.2.3-rc1)
+          name: ${{ github.ref_name }}
+          body: |
+            Release notes:
+            - Windows: Installer executable (.exe)
+            - macOS: Disk image (.dmg)
+            - Linux: AppImage package
           files: |
-            windows-build/*
-            macos-build/*
-            linux-build/*
+            artifacts/windows-build/*
+            artifacts/macos-build/*
+            artifacts/linux-build/*
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
