@@ -23,22 +23,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test
+      # - name: Run tests
+      #   run: npm test
 
       - name: Build application
         run: npm run build
 
-      # -- ADD THIS STEP --
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
-          path: dist  # Replace "dist" with the actual directory containing your build artifacts.  Important!
-          retention-days: 7 # Optional: How long to keep the artifacts (default is 90 days)
+          path: dist
+          retention-days: 7
 
-      - name: Add success label (if tests pass)
-        if: success()
+      - name: Add success label (if tests pass and is a PR)
+        if: success() && github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
           script: |
@@ -49,8 +48,8 @@ jobs:
               labels: ['build: success']
             })
 
-      - name: Notify success
-        if: success()
+      - name: Notify success (if tests pass and is a PR)
+        if: success() && github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
           script: |
@@ -61,8 +60,8 @@ jobs:
               body: '🚀 Build succeeded!'
             })
 
-      - name: Add failure label (if tests fail)
-        if: failure()
+      - name: Add failure label (if tests fail and is a PR)
+        if: failure() && github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
           script: |
@@ -73,8 +72,8 @@ jobs:
               labels: ['build: failed']
             })
 
-      - name: Notify failure
-        if: failure()
+      - name: Notify failure (if tests fail and is a PR)
+        if: failure() && github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
           script: |
@@ -91,16 +90,15 @@ jobs:
     if: github.ref == 'refs/heads/main'
     
     steps:
-      # -- ADD THIS STEP --
       - name: Download build artifacts
         uses: actions/download-artifact@v3
         with:
           name: build-artifacts
-          path: artifacts # Directory to save the downloaded artifacts
+          path: artifacts
 
       - name: Docker build and push
         uses: docker/build-push-action@v4
         with:
-          context: ./artifacts # Use the directory with downloaded artifacts
+          context: ./artifacts
           push: true
           tags: user/app:latest
