@@ -53,23 +53,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Windows Build
+      - name: Download All Build
         uses: actions/download-artifact@v4
         with:
-          name: windows-latest-build
-          path: windows-build
-
-      - name: Download macOS Build
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-latest-build
-          path: macos-build
-
-      - name: Download Linux Build
-        uses: actions/download-artifact@v4
-        with:
-          name: ubuntu-latest-build
-          path: linux-build
+          name: build-artifacts
+          path: all-build
 
       - name: Create Release
         id: create_release
@@ -81,6 +69,4 @@ jobs:
           draft: false # Change to true for draft releases
           prerelease: ${{ contains(github.ref_name, '-') }}  # Mark as prerelease if tag contains a hyphen (e.g., v1.2.3-rc1)
           files: |
-            windows-build/*
-            macos-build/*
-            linux-build/*
+            all-build/*
