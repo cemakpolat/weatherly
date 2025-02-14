@@ -28,26 +28,19 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build for ${{ matrix.os }}
+      - name: Build for all
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          if [[ "${matrix.os}" == "windows-latest" ]]; then
             npm run build:win
-            BUILD_TARGET="win"
-          elif [[ "${matrix.os}" == "macos-latest" ]]; then
             npm run build:mac
-            BUILD_TARGET="mac"
-          elif [[ "${matrix.os}" == "ubuntu-latest" ]]; then
             npm run build:linux
-            BUILD_TARGET="linux"
-          fi
         
       - name: Upload Build Artifacts for ${{ matrix.os }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-build
+          name: build-artifacts
           path: dist
           retention-days: 7
 
