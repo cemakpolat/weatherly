@@ -28,14 +28,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # - name: Run tests
+      # - name: Run tests # TODO: not resolved jet!
       #   run: npm test
 
-      - name: Debug - Print GITHUB_TOKEN
-        run: |
-          echo 'GITHUB_TOKEN: $GITHUB_TOKEN'
-        env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

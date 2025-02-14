@@ -8,7 +8,7 @@ function createWindow() {
     height: 600,
     frame: false, // Disable the default window frame
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'), // Optional: Use preload.js for secure communication
+      preload: path.join(__dirname, '../preload.js'), // Optional: Use preload.js for secure communication
       nodeIntegration: true,
       contextIsolation: false,
     },

@@ -1,5 +1,5 @@
 module.exports = {
     testEnvironment: 'jsdom',
-    setupFilesAfterEnv: ['@testing-library/jest-dom'],
-    testMatch: ['**/__tests__/**/*.test.js'],
+    setupFilesAfterEnv: ['./src/renderer/setupTests.js'],
+    testMatch: ['./src/renderer/__tests__/**/*.test.js'],
   };

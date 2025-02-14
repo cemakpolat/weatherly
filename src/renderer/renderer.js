@@ -117,11 +117,13 @@ async function fetchWeatherData(latitude, longitude) {
 }
 
 // --- UI Rendering Functions ---
+
 // Function to create a city card
 function createCityCard(cityData) {
   const { name, country_code, weather } = cityData;
   const currentTemp = weather.current_weather.temperature;
   const weatherCode = weather.current_weather.weathercode;
+  
 
   const card = document.createElement('div');
   card.className = 'col';
@@ -140,12 +142,7 @@ function createCityCard(cityData) {
         <hr>
         <h5>Next 6 Hours:</h5>
         <div class="d-flex justify-content-around">
-          ${weather.hourly.time.slice(0, 6).map((time, index) => `
-            <div>
-              <small>${new Date(time).getHours()}h</small>
-              <p>${weather.hourly.temperature_2m[index]}°C</p>
-            </div>
-          `).join('')}
+          ${getNext6HoursForecast(weather.hourly.time, weather.hourly.temperature_2m)}
         </div>
       </div>
     </div>
@@ -158,6 +155,51 @@ function createCityCard(cityData) {
   });
 
   return card;
+}
+
+
+/**
+ * Generates the HTML for the next 6 hours forecast.
+ * @param {Array<string>} times - Array of hourly time strings.
+ * @param {Array<number>} temperatures - Array of hourly temperatures.
+ * @returns {string} - HTML string for the forecast.
+ */
+function getNext6HoursForecast(times, temperatures) {
+  const now = new Date();
+  const currentHour = now.getHours();
+  const forecastItems = [];
+
+  for (let i = 0; i < 6; i++) {
+    const forecastHour = (currentHour + i) % 24;
+    let forecastIndex = times.findIndex(time => new Date(time).getHours() === forecastHour);
+
+    // Handle cases where the forecast hour is not found in the initial data,
+    // meaning we need to wrap around to the next day's data.
+    if (forecastIndex === -1) {
+      // Search for the forecast hour in the remaining hours
+      forecastIndex = times.findIndex(time => new Date(time).getHours() === forecastHour);
+    }
+
+    if (forecastIndex !== -1) {
+      const temperature = temperatures[forecastIndex];
+      forecastItems.push(`
+        <div>
+          <small>${forecastHour}h</small>
+          <p>${temperature}°C</p>
+        </div>
+      `);
+    } else {
+      // If the forecast hour is still not found (edge case), display a placeholder.
+      forecastItems.push(`
+        <div>
+          <small>${forecastHour}h</small>
+          <p>--°C</p>
+        </div>
+      `);
+    }
+  }
+
+  return forecastItems.join('');
 }
 
 /**
@@ -423,11 +465,14 @@ if (typeof require === 'function') {
     searchBarContainer.classList.toggle('d-none');
   });
 }
+
 const scrollableContainer = document.getElementById('scrollable-container');
+if (scrollableContainer!=null){
+  scrollableContainer.addEventListener('wheel', (event) => {
+      event.preventDefault(); // Prevent default scrolling
 
-scrollableContainer.addEventListener('wheel', (event) => {
-    event.preventDefault(); // Prevent default scrolling
+      // Adjust the scroll position based on the mouse wheel delta
+      scrollableContainer.scrollTop += event.deltaY;
+  });
+}
 
-    // Adjust the scroll position based on the mouse wheel delta
-    scrollableContainer.scrollTop += event.deltaY;
-});
