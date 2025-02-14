@@ -28,19 +28,26 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build for all
+      - name: Build for ${{ matrix.os }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
+          if [[ "${matrix.os}" == "windows-latest" ]]; then
             npm run build:win
+            BUILD_TARGET="win"
+          elif [[ "${matrix.os}" == "macos-latest" ]]; then
             npm run build:mac
+            BUILD_TARGET="mac"
+          elif [[ "${matrix.os}" == "ubuntu-latest" ]]; then
             npm run build:linux
+            BUILD_TARGET="linux"
+          fi
         
       - name: Upload Build Artifacts for ${{ matrix.os }}
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
+          name: ${{ matrix.os }}-build
           path: dist
           retention-days: 7
 
@@ -53,11 +60,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download All Build
+      - name: Download Windows Build
         uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
-          path: all-build
+          name: windows-latest-build
+          path: windows-build
+
+      - name: Download macOS Build
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-latest-build
+          path: macos-build
+
+      - name: Download Linux Build
+        uses: actions/download-artifact@v4
+        with:
+          name: ubuntu-latest-build
+          path: linux-build
 
       - name: Create Release
         id: create_release
@@ -69,4 +88,6 @@ jobs:
           draft: false # Change to true for draft releases
           prerelease: ${{ contains(github.ref_name, '-') }}  # Mark as prerelease if tag contains a hyphen (e.g., v1.2.3-rc1)
           files: |
-            all-build/*
+            windows-build/*
+            macos-build/*
+            linux-build/*
