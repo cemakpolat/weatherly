@@ -16,7 +16,10 @@ function createWindow() {
 
   mainWindow.loadFile('src/renderer/index.html');
 
-  // Handle close event
+   // Open DevTools (optional) // Debugging
+// mainWindow.webContents.openDevTools();
+
+// Handle close event
   ipcMain.on('close-window', () => {
     mainWindow.close();
   });
@@ -26,8 +29,6 @@ function createWindow() {
     mainWindow.minimize();
   });
 }
-   // Open DevTools (optional) // Debugging
-// mainWindow.webContents.openDevTools();
 
 app.on('ready', createWindow);
 
