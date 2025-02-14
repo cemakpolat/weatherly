@@ -20,7 +20,7 @@ jobs:
       - run: npm install
       - run: npm run build:win
         env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -28,7 +28,7 @@ jobs:
           path: dist/*.exe
 
   build-macos:
-    name: Build macOS
+    name: Build macOS (Unsigned)
     runs-on: macos-latest
     permissions:
       contents: write
@@ -39,25 +39,20 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm install
-      # - name: Import Apple certificates
-      #   uses: apple-actions/import-codesign-certs@v2
-      #   with:
-      #     p12-file-base64: ${{ secrets.MACOS_P12_BASE64 }}
-      #     p12-password: ${{ secrets.MACOS_P12_PASSWORD }}
-      #     keychain: signing_temp
-      #     create-keychain: true
-      # - name: Verify DMG
-      #   run: |
-      #     codesign --verify --deep --strict dist/Weatherly.dmg
-      #     spctl --assess --type install dist/Weatherly.dmg
       - run: npm run build:mac
         env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ✅ Zip the macOS build instead of creating a DMG
+      - name: Package as ZIP (instead of DMG)
+        run: |
+          cd dist
+          zip -r Weatherly-macOS.zip Weatherly.app
 
       - uses: actions/upload-artifact@v4
         with:
           name: macos-build
-          path: dist/*.dmg
+          path: dist/Weatherly-macOS.zip
 
   build-linux:
     name: Build Linux
@@ -73,7 +68,7 @@ jobs:
       - run: npm install
       - run: npm run build:linux
         env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -81,7 +76,7 @@ jobs:
           path: dist/*.AppImage
 
   create-release:
-    name: Create Release
+    name: Create GitHub Release
     needs: [build-windows, build-macos, build-linux]
     runs-on: ubuntu-latest
     permissions:
