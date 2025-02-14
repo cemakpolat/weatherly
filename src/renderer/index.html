@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather in World Cities</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Custom Title Bar -->
+  <div id="custom-title-bar">
+    <div class="title">Weatherly</div>
+    <div class="controls">
+      <button id="search-toggle-btn"><i class="fas fa-search"></i></button>
+      <button id="minimize-btn"><i class="fas fa-window-minimize"></i></button>
+      <button id="close-btn"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+
+    <!-- Search Bar (initially hidden) -->
+    <div class="container my-5">
+    <div id="search-bar-container" >
+      <div class="row justify-content-center mb-4">
+        <div class="col-md-12 position-relative">
+          <div class="input-group">
+            <input type="text" id="citySearch" class="form-control form-control-lg" placeholder="Enter a city name">
+            <button id="searchButton" class="btn btn-primary btn-lg">
+              <i class="fas fa-search"></i> 
+            </button>
+          </div>
+            <!-- Autocomplete Dropdown -->
+        <div class="col-md-12 position-relative">
+          <div id="autocompleteDropdown" class="dropdown-menu w-100"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <!-- City Cards -->
+    <div class="container my-5">
+      <div id="cities" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <!-- City cards will be dynamically added here -->
+      </div>
+    </div>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>

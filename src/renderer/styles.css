@@ -1,0 +1,184 @@
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+
+body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(270deg, #6a11cb, #2575fc, #ff7e5f, #feb47b);
+  background-size: 400% 400%;
+  animation: GradientBackground 15s ease infinite;
+  color: white;
+  min-height: 100vh;
+}
+
+@keyframes GradientBackground {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+#citySearch {
+  opacity: 0.5;
+}
+
+.card {
+  animation: fadeIn 0.5s ease-in-out;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-10px);
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.card-text {
+  font-size: 1.1rem;
+}
+
+.weather-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+/* Custom styles for the search bar */
+.input-group {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.form-control-lg {
+  border-radius: 10px 0 0 10px;
+}
+
+.btn-lg {
+  border-radius: 0 10px 10px 0;
+}
+
+/* Hide the remove button by default */
+/* Remove button styles */
+.remove-button {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background-color: #ffffff;
+}
+
+.card:hover .remove-button {
+  opacity: 0.5;
+}
+
+.remove-button:hover {
+  background-color: #ffffff;
+  opacity: 0.5;
+}
+/* Style the remove button */
+.remove-button {
+  background-color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.remove-button i {
+  font-size: 12px;
+}
+
+/* Autocomplete dropdown styles */
+#autocompleteDropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 1px;
+  max-height: 200px;
+  overflow-y: auto;
+  opacity: 0.5;
+}
+
+#autocompleteDropdown .dropdown-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  color: #333;
+}
+
+#autocompleteDropdown .dropdown-item:hover {
+  background-color: #f8f9fa;
+  opacity: 0.5;
+}
+
+
+/* Custom Title Bar */
+#custom-title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* background-color: rgba(0, 0, 0, 0.7); */
+  color: white;
+  
+  padding: 8px 16px;
+  -webkit-app-region: drag; /* Allow dragging the window */
+}
+
+#custom-title-bar .title {
+  font-size: 14px;
+}
+
+#custom-title-bar .controls {
+  display: flex;
+  gap: 8px;
+}
+
+#custom-title-bar .controls button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  -webkit-app-region: no-drag; /* Prevent dragging on buttons */
+}
+
+#custom-title-bar .controls button:hover {
+  color: #ddd;
+}
+
+/* Search bar container */
+#search-bar-container {
+  transition: opacity 0.3s ease;
+  top:10px;
+}
+
+#search-bar-container.d-none {
+  display: none;
+}
+
+/* Highlight selected suggestion */
+.dropdown-item.selected {
+  background-color: #558ecb;
+  color: white;
+}
