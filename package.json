@@ -37,15 +37,6 @@
       "output": "dist",
       "buildResources": "build"
     },
-    "jest": {
-      "testMatch": [
-        "./src/renderer/__tests__/**/*.test.js"
-      ],
-      "setupFilesAfterEnv": [
-        "./src/renderer/setupTests.js"
-      ],
-      "testEnvironment": "jsdom"
-    },
     "files": [
       "**/*",
       "!**/__tests__/**",
