@@ -39,17 +39,17 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm install
-      - name: Import Apple certificates
-        uses: apple-actions/import-codesign-certs@v2
-        with:
-          p12-file-base64: ${{ secrets.MACOS_P12_BASE64 }}
-          p12-password: ${{ secrets.MACOS_P12_PASSWORD }}
-          keychain: signing_temp
-          create-keychain: true
-      - name: Verify DMG
-        run: |
-          codesign --verify --deep --strict dist/Weatherly.dmg
-          spctl --assess --type install dist/Weatherly.dmg
+      # - name: Import Apple certificates
+      #   uses: apple-actions/import-codesign-certs@v2
+      #   with:
+      #     p12-file-base64: ${{ secrets.MACOS_P12_BASE64 }}
+      #     p12-password: ${{ secrets.MACOS_P12_PASSWORD }}
+      #     keychain: signing_temp
+      #     create-keychain: true
+      # - name: Verify DMG
+      #   run: |
+      #     codesign --verify --deep --strict dist/Weatherly.dmg
+      #     spctl --assess --type install dist/Weatherly.dmg
       - run: npm run build:mac
         env:
             GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
