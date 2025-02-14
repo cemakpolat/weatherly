@@ -100,21 +100,21 @@ jobs:
               body: '❌ Build failed. Please check the logs.'
             })
 
-  deploy:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+  # deploy:
+  #   needs: build-and-test
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
     
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: build-artifacts
-          path: artifacts
+  #   steps:
+  #     - name: Download build artifacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: build-artifacts
+  #         path: artifacts
 
-      - name: Docker build and push
-        uses: docker/build-push-action@v4
-        with:
-          context: ./artifacts
-          push: true
-          tags: user/app:latest
+  #     - name: Docker build and push
+  #       uses: docker/build-push-action@v4
+  #       with:
+  #         context: ./artifacts
+  #         push: true
+  #         tags: user/app:latest
