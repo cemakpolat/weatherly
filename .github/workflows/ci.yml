@@ -31,14 +31,14 @@ jobs:
       # - name: Run tests
       #   run: npm test
 
-      - name: Debug - Print GH_TOKEN
+      - name: Debug - Print GITHUB_TOKEN
         run: |
-          echo 'GH_TOKEN: $GH_TOKEN'
+          echo 'GITHUB_TOKEN: $GITHUB_TOKEN'
         env:
-            GH_TOKEN: ${{ secrets.GH_TOKEN }}
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Run build
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm run build
       
@@ -46,7 +46,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') # Only run on tagged releases
         uses: release-drafter/release-drafter@v5
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           publish: true
 
