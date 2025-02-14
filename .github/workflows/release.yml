@@ -6,17 +6,19 @@ on:
       - 'v*.*.*' # Trigger on tags like v1.2.3
 
 jobs:
-
   release:
-    needs: build-and-test # Make sure the job runs after
     runs-on: ubuntu-latest
     permissions:
       contents: write  # Needed to create releases
       packages: write  # If you're publishing packages
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest] # Define OS matrix
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-  
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -26,24 +28,55 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run build
+      - name: Build for ${{ matrix.os }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
-          npm run build
-
-      - name: Upload build artifacts
+          if [[ "${matrix.os}" == "windows-latest" ]]; then
+            npm run build:win
+            BUILD_TARGET="win"
+          elif [[ "${matrix.os}" == "macos-latest" ]]; then
+            npm run build:mac
+            BUILD_TARGET="mac"
+          elif [[ "${matrix.os}" == "ubuntu-latest" ]]; then
+            npm run build:linux
+            BUILD_TARGET="linux"
+          fi
+        
+      - name: Upload Build Artifacts for ${{ matrix.os }}
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
+          name: ${{ matrix.os }}-build
           path: dist
           retention-days: 7
 
-      - name: Download build artifacts
+  create-release:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Windows Build
         uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
-          path: artifacts
+          name: windows-latest-build
+          path: windows-build
+
+      - name: Download macOS Build
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-latest-build
+          path: macos-build
+
+      - name: Download Linux Build
+        uses: actions/download-artifact@v4
+        with:
+          name: ubuntu-latest-build
+          path: linux-build
 
       - name: Create Release
         id: create_release
@@ -54,6 +87,7 @@ jobs:
           body_path: CHANGELOG.md # Or a file with release notes, if available
           draft: false # Change to true for draft releases
           prerelease: ${{ contains(github.ref_name, '-') }}  # Mark as prerelease if tag contains a hyphen (e.g., v1.2.3-rc1)
-
           files: |
-            artifacts/*  # Attach all files in the artifacts directory to the release
+            windows-build/*
+            macos-build/*
+            linux-build/*
