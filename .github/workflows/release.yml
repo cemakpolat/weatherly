@@ -7,6 +7,7 @@ on:
 
 jobs:
   release:
+    needs: build-and-test # Make sure the job runs after
     runs-on: ubuntu-latest
     permissions:
       contents: write  # Needed to create releases
