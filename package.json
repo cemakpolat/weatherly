@@ -50,7 +50,6 @@
     },
     "mac": {
       "target": "dmg",
-      "arch": "universal", 
       "icon": "build/icon.icns",
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
