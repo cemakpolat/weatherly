@@ -45,7 +45,7 @@ jobs:
 
       - name: Verify DMG
         run: |
-          hdiutil verify dist/Weatherly.dmg
+          hdiutil verify dist/Weatherly-1.0.0-arm64.dmg
       - uses: actions/upload-artifact@v4
         with:
           name: macos-build
