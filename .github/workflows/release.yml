@@ -20,7 +20,7 @@ jobs:
       - run: npm install
       - run: npm run build:win
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -28,7 +28,7 @@ jobs:
           path: dist/*.exe
 
   build-macos:
-    name: Build macOS (Unsigned)
+    name: Build macOS
     runs-on: macos-latest
     permissions:
       contents: write
@@ -41,18 +41,12 @@ jobs:
       - run: npm install
       - run: npm run build:mac
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # ✅ Zip the macOS build instead of creating a DMG
-      - name: Package as ZIP (instead of DMG)
-        run: |
-          cd dist
-          zip -r Weatherly-macOS.zip Weatherly.app
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         with:
           name: macos-build
-          path: dist/Weatherly-macOS.zip
+          path: dist/*.dmg
 
   build-linux:
     name: Build Linux
@@ -68,7 +62,7 @@ jobs:
       - run: npm install
       - run: npm run build:linux
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -76,7 +70,7 @@ jobs:
           path: dist/*.AppImage
 
   create-release:
-    name: Create GitHub Release
+    name: Create Release
     needs: [build-windows, build-macos, build-linux]
     runs-on: ubuntu-latest
     permissions:
