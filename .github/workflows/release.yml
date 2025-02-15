@@ -27,26 +27,26 @@ jobs:
           name: windows-build
           path: dist/*.exe
 
-  build-macos:
-    name: Build macOS
-    runs-on: macos-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-      - run: npm install
-      - run: npm run build:mac
-        env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # build-macos:
+  #   name: Build macOS
+  #   runs-on: macos-latest
+  #   permissions:
+  #     contents: write
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20
+  #         cache: 'npm'
+  #     - run: npm install
+  #     - run: npm run build:mac
+  #       env:
+  #           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos-build
-          path: dist/*.dmg
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         name: macos-build
+  #         path: dist/*.dmg
 
   build-linux:
     name: Build Linux
@@ -86,6 +86,5 @@ jobs:
           tag_name: ${{ github.ref_name }}
           files: |
             artifacts/windows-build/*
-            artifacts/macos-build/*
             artifacts/linux-build/*
           draft: false
