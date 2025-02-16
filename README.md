@@ -1,12 +1,14 @@
 # Weather App
 
-A cross-platform Electron app to display weather for cities worldwide.
+A cross-platform Electron app to display weather for cities worldwide. Each city can be easily added and removed through the search bar. The searchbar can be hided to have full screen weather city status. 
+![alt text](./docs/weatherly-main.png "Weatherlyapp")
+
 
 ## Features
 - **Search for Cities**: Autocomplete suggestions for cities.
 - **Weather Details**: Current weather and 6-hour forecast.
 - **Custom UI**: Headless window with a custom title bar.
-- **Persistent State**: Remembers search bar visibility across sessions.
+
 
 ## Technologies
 - **Electron**: For building cross-platform desktop apps.
@@ -18,3 +20,15 @@ A cross-platform Electron app to display weather for cities worldwide.
 1. Clone the repository:
    ```bash
    git clone https://github.com/your-username/weather-app.git
+2. Start the project
+
+    ```
+    npm start
+    ```
+
+## Build
+
+1. Build the project 
+```
+   npm run build
+```
