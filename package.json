@@ -2,7 +2,6 @@
   "name": "weatherly",
   "version": "1.0.0",
   "main": "src/main/main.js",
-  "type": "module",
   "author": "Cem Akpolat <akpolatcem@gmail.com>",
   "scripts": {
     "start": "electron .",
