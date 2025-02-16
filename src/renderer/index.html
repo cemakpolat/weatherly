@@ -19,9 +19,9 @@
     </div>
   </div>
 
-    <!-- Search Bar (initially hidden) -->
-    <div class="container my-5">
-    <div id="search-bar-container" >
+  <!-- Search Bar (initially hidden) -->
+  <div class="container my-5">
+    <div id="search-bar-container">
       <div class="row justify-content-center mb-4">
         <div class="col-md-12 position-relative">
           <div class="input-group">
@@ -30,21 +30,21 @@
               <i class="fas fa-search"></i> 
             </button>
           </div>
-            <!-- Autocomplete Dropdown -->
-        <div class="col-md-12 position-relative">
+          <!-- Autocomplete Dropdown -->
           <div id="autocompleteDropdown" class="dropdown-menu w-100"></div>
-          </div>
         </div>
       </div>
     </div>
-    </div>
-    <!-- City Cards -->
-    <div class="container my-5">
-      <div id="cities" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        <!-- City cards will be dynamically added here -->
-      </div>
+  </div>
+
+  <!-- City Cards -->
+  <div class="container my-5">
+    <div id="cities" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <!-- City cards will be dynamically added here -->
     </div>
   </div>
-  <script src="renderer.js"></script>
+
+  <!-- Load renderer.js with defer -->
+  <script src="renderer.js" defer></script>
 </body>
 </html>
