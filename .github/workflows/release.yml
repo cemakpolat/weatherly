@@ -1,35 +1,94 @@
-name: Release
+name: Release Build
 
 on:
   push:
     tags:
-      - 'v*.*.*' # Trigger on tags like v1.2.3
+      - 'v*.*.*'
 
 jobs:
-  release:
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm install
+      - run: npm run build:win
+        env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: dist/*.exe
+
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm install
+      - run: npm run build:mac
+        env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify DMG
+        run: |
+          hdiutil verify dist/Weatherly-1.0.0.dmg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: dist/*.dmg
+
+  build-linux:
+    name: Build Linux
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Needed to create releases
-      packages: write  # If you're publishing packages
+      contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          name: build-artifacts
+          node-version: 20
+          cache: 'npm'
+      - run: npm install
+      - run: npm run build:linux
+        env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: dist/*.AppImage
+
+  create-release:
+    name: Create Release
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
           path: artifacts
 
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          body_path: CHANGELOG.md # Or a file with release notes, if available
-          draft: false # Change to true for draft releases
-          prerelease: ${{ contains(github.ref_name, '-') }}  # Mark as prerelease if tag contains a hyphen (e.g., v1.2.3-rc1)
-
           files: |
-            artifacts/*  # Attach all files in the artifacts directory to the release
+            artifacts/windows-build/*
+            artifacts/macos-build/*
+            artifacts/linux-build/*
+          draft: false
