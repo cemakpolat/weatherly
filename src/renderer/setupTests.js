@@ -1,5 +1,5 @@
 
-import '@testing-library/jest-dom'; // Import jest-dom for better assertions
+require('@testing-library/jest-dom'); // Use require instead of import
 
 // Mock Electron's ipcRenderer
 jest.mock('electron', () => {

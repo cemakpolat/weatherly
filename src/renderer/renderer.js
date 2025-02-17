@@ -487,3 +487,23 @@ if (scrollableContainer) {
     scrollableContainer.scrollTop += event.deltaY;
   });
 }
+
+module.exports = {
+  fetchJson: fetchJson,
+  saveToSessionStorage: saveToSessionStorage,
+  getFromSessionStorage: getFromSessionStorage,
+  isSessionStorageAvailable: isSessionStorageAvailable,
+  loadCities: loadCities,
+  fetchWeather: fetchWeather,
+  fetchGeocodingData: fetchGeocodingData,
+  fetchWeatherData: fetchWeatherData,
+  createCityCard: createCityCard,
+  getWeatherIcon: getWeatherIcon,
+  getWeatherDescription: getWeatherDescription,
+  handleSearch: handleSearch,
+  isCityAlreadyDisplayed: isCityAlreadyDisplayed,
+  addNewCityToStorage: addNewCityToStorage,
+  showAutocompleteSuggestions: showAutocompleteSuggestions,
+  updateSelectedSuggestion: updateSelectedSuggestion,
+
+};
