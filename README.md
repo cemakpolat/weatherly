@@ -1,6 +1,7 @@
-# Weather App
+# Weathely - A Weather App
 
 A cross-platform Electron app to display weather for cities worldwide. Each city can be easily added and removed through the search bar. The searchbar can be hided to have full screen weather city status. 
+
 ![alt text](./docs/weatherly-main.png "Weatherlyapp")
 
 
