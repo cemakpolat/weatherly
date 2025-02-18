@@ -1,21 +1,55 @@
-
-const { ipcRenderer } = require('electron');
-
-
-const citiesContainer = document.getElementById('cities');
-const citySearch = document.getElementById('citySearch');
-const searchButton = document.getElementById('searchButton');
-const autocompleteDropdown = document.getElementById('autocompleteDropdown');
-
-let selectedIndex = -1; // Track the selected suggestion index
-let lastSearchTerm = ''; // Track the last search term to prevent duplicates
-
+// --- Constants ---
 const CITIES_JSON_URL = 'cities.json'; // URL for the cities JSON file
 const GEOCODING_API_URL = 'https://geocoding-api.open-meteo.com/v1/search';
 const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
 const DEFAULT_LANGUAGE = 'en';
 
-// // --- Utility Functions ---
+// --- DOM Elements ---
+const citiesContainer = document.getElementById('cities');
+const citySearch = document.getElementById('citySearch');
+const searchButton = document.getElementById('searchButton');
+const autocompleteDropdown = document.getElementById('autocompleteDropdown');
+const searchToggleBtn = document.getElementById('search-toggle-btn');
+const searchBarContainer = document.getElementById('search-bar-container');
+const scrollableContainer = document.getElementById('scrollable-container');
+
+// --- State Variables ---
+let selectedIndex = -1; // Track the selected suggestion index
+let lastSearchTerm = ''; // Track the last search term to prevent duplicates
+
+// --- Weather Icon and Description Mappings ---
+const WEATHER_MAPPINGS = {
+  0: { icon: 'fa-sun', description: 'Clear sky' },
+  1: { icon: 'fa-cloud-sun', description: 'Mainly clear' },
+  2: { icon: 'fa-cloud', description: 'Partly cloudy' },
+  3: { icon: 'fa-cloud', description: 'Overcast' },
+  45: { icon: 'fa-smog', description: 'Fog' },
+  48: { icon: 'fa-smog', description: 'Depositing rime fog' },
+  51: { icon: 'fa-cloud-rain', description: 'Light drizzle' },
+  53: { icon: 'fa-cloud-rain', description: 'Moderate drizzle' },
+  55: { icon: 'fa-cloud-rain', description: 'Dense drizzle' },
+  56: { icon: 'fa-cloud-rain', description: 'Light freezing drizzle' },
+  57: { icon: 'fa-cloud-rain', description: 'Dense freezing drizzle' },
+  61: { icon: 'fa-cloud-showers-heavy', description: 'Slight rain' },
+  63: { icon: 'fa-cloud-showers-heavy', description: 'Moderate rain' },
+  65: { icon: 'fa-cloud-showers-heavy', description: 'Heavy rain' },
+  66: { icon: 'fa-cloud-showers-heavy', description: 'Light freezing rain' },
+  67: { icon: 'fa-cloud-showers-heavy', description: 'Heavy freezing rain' },
+  71: { icon: 'fa-snowflake', description: 'Slight snowfall' },
+  73: { icon: 'fa-snowflake', description: 'Moderate snowfall' },
+  75: { icon: 'fa-snowflake', description: 'Heavy snowfall' },
+  77: { icon: 'fa-snowflake', description: 'Snow grains' },
+  80: { icon: 'fa-cloud-showers-heavy', description: 'Slight rain showers' },
+  81: { icon: 'fa-cloud-showers-heavy', description: 'Moderate rain showers' },
+  82: { icon: 'fa-cloud-showers-heavy', description: 'Violent rain showers' },
+  85: { icon: 'fa-snowflake', description: 'Slight snow showers' },
+  86: { icon: 'fa-snowflake', description: 'Heavy snow showers' },
+  95: { icon: 'fa-bolt', description: 'Thunderstorm' },
+  96: { icon: 'fa-bolt', description: 'Thunderstorm with slight hail' },
+  99: { icon: 'fa-bolt', description: 'Thunderstorm with heavy hail' },
+};
+
+// --- Utility Functions ---
 
 /**
  * Fetches JSON data from a URL.
@@ -42,7 +76,9 @@ async function fetchJson(url) {
  * @param {any} data - The data to store (will be JSON stringified).
  */
 function saveToSessionStorage(key, data) {
-  sessionStorage.setItem(key, JSON.stringify(data));
+  if (isSessionStorageAvailable()) {
+    sessionStorage.setItem(key, JSON.stringify(data));
+  }
 }
 
 /**
@@ -51,12 +87,33 @@ function saveToSessionStorage(key, data) {
  * @returns {any} - The parsed JSON data, or null if not found.
  */
 function getFromSessionStorage(key) {
-  const data = sessionStorage.getItem(key);
-  return data ? JSON.parse(data) : null;
+  if (isSessionStorageAvailable()) {
+    const data = sessionStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+  }
+  return null;
 }
 
+/**
+ * Checks if session storage is available.
+ * @returns {boolean} - True if session storage is available, false otherwise.
+ */
+function isSessionStorageAvailable() {
+  try {
+    const testKey = '__test__';
+    sessionStorage.setItem(testKey, testKey);
+    sessionStorage.removeItem(testKey);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 
 // --- Data Loading and Storage ---
+
+/**
+ * Loads cities from the JSON file and saves them to session storage.
+ */
 async function loadCities() {
   try {
     const cities = await fetchJson(CITIES_JSON_URL);
@@ -75,7 +132,7 @@ loadCities();
 /**
  * Fetches weather data for a given city.
  * @param {string} city - The name of the city.
- * @returns {Promise<object|null>} - The weather data, or null if an error occurred.
+ * @returns {Promise<{ name: string, country_code: string, weather: object }|null>} - The weather data or null if an error occurs.
  */
 async function fetchWeather(city) {
   try {
@@ -97,8 +154,8 @@ async function fetchWeather(city) {
 
 /**
  * Fetches geocoding data for a city.
- * @param {string} city The city name.
- * @returns {Promise<any>} The geocoding data.
+ * @param {string} city - The city name.
+ * @returns {Promise<any>} - The geocoding data.
  */
 async function fetchGeocodingData(city) {
   const url = `${GEOCODING_API_URL}?name=${city}&count=1&language=${DEFAULT_LANGUAGE}&format=json`;
@@ -107,9 +164,9 @@ async function fetchGeocodingData(city) {
 
 /**
  * Fetches weather data for given coordinates.
- * @param {number} latitude Latitude.
- * @param {number} longitude Longitude.
- * @returns {Promise<any>} The weather data.
+ * @param {number} latitude - Latitude.
+ * @param {number} longitude - Longitude.
+ * @returns {Promise<any>} - The weather data.
  */
 async function fetchWeatherData(latitude, longitude) {
   const url = `${WEATHER_API_URL}?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=temperature_2m,weathercode`;
@@ -118,23 +175,24 @@ async function fetchWeatherData(latitude, longitude) {
 
 // --- UI Rendering Functions ---
 
-// Function to create a city card
+/**
+ * Creates a city card element.
+ * @param {object} cityData - The city data.
+ * @returns {HTMLElement} - The city card element.
+ */
 function createCityCard(cityData) {
   const { name, country_code, weather } = cityData;
   const currentTemp = weather.current_weather.temperature;
   const weatherCode = weather.current_weather.weathercode;
-  
 
   const card = document.createElement('div');
   card.className = 'col';
   card.innerHTML = `
     <div class="card h-100 p-3">
       <div class="card-body text-center position-relative">
-        <!-- Remove Button -->
-        <button class="btn btn-sm position-absolute top-0 end-0 m-2 remove-button">
+        <button class="btn btn-sm position-absolute top-0 end-0 m-2 remove-button" aria-label="Remove city">
           <i class="fas fa-x"></i>
         </button>
-        <!-- City Info -->
         <h3 class="card-title">${name}, ${country_code}</h3>
         ${getWeatherIcon(weatherCode)}
         <p class="card-text">Current: ${currentTemp}°C</p>
@@ -151,12 +209,12 @@ function createCityCard(cityData) {
   // Add event listener to the remove button
   const removeButton = card.querySelector('.remove-button');
   removeButton.addEventListener('click', () => {
-    card.remove(); // Remove the card from the DOM
+    card.remove();
+    saveSettings();
   });
 
   return card;
 }
-
 
 /**
  * Generates the HTML for the next 6 hours forecast.
@@ -173,10 +231,7 @@ function getNext6HoursForecast(times, temperatures) {
     const forecastHour = (currentHour + i) % 24;
     let forecastIndex = times.findIndex(time => new Date(time).getHours() === forecastHour);
 
-    // Handle cases where the forecast hour is not found in the initial data,
-    // meaning we need to wrap around to the next day's data.
     if (forecastIndex === -1) {
-      // Search for the forecast hour in the remaining hours
       forecastIndex = times.findIndex(time => new Date(time).getHours() === forecastHour);
     }
 
@@ -189,7 +244,6 @@ function getNext6HoursForecast(times, temperatures) {
         </div>
       `);
     } else {
-      // If the forecast hour is still not found (edge case), display a placeholder.
       forecastItems.push(`
         <div>
           <small>${forecastHour}h</small>
@@ -203,43 +257,13 @@ function getNext6HoursForecast(times, temperatures) {
 }
 
 /**
-* Gets the FontAwesome icon class name based on the weather code.
-* @param {number} weatherCode - The weather code.
-* @returns {string} - The FontAwesome icon class name.
-*/
-// Function to get FontAwesome icon based on weather code
+ * Gets the weather icon based on the weather code.
+ * @param {number} weatherCode - The weather code.
+ * @returns {string} - The FontAwesome icon HTML.
+ */
 function getWeatherIcon(weatherCode) {
-  const weatherIcons = {
-    0: 'fa-sun', // Clear sky
-    1: 'fa-cloud-sun', // Mainly clear
-    2: 'fa-cloud', // Partly cloudy
-    3: 'fa-cloud', // Overcast
-    45: 'fa-smog', // Fog
-    48: 'fa-smog', // Depositing rime fog
-    51: 'fa-cloud-rain', // Light drizzle
-    53: 'fa-cloud-rain', // Moderate drizzle
-    55: 'fa-cloud-rain', // Dense drizzle
-    56: 'fa-cloud-rain', // Light freezing drizzle
-    57: 'fa-cloud-rain', // Dense freezing drizzle
-    61: 'fa-cloud-showers-heavy', // Slight rain
-    63: 'fa-cloud-showers-heavy', // Moderate rain
-    65: 'fa-cloud-showers-heavy', // Heavy rain
-    66: 'fa-cloud-showers-heavy', // Light freezing rain
-    67: 'fa-cloud-showers-heavy', // Heavy freezing rain
-    71: 'fa-snowflake', // Slight snowfall
-    73: 'fa-snowflake', // Moderate snowfall
-    75: 'fa-snowflake', // Heavy snowfall
-    77: 'fa-snowflake', // Snow grains
-    80: 'fa-cloud-showers-heavy', // Slight rain showers
-    81: 'fa-cloud-showers-heavy', // Moderate rain showers
-    82: 'fa-cloud-showers-heavy', // Violent rain showers
-    85: 'fa-snowflake', // Slight snow showers
-    86: 'fa-snowflake', // Heavy snow showers
-    95: 'fa-bolt', // Thunderstorm
-    96: 'fa-bolt', // Thunderstorm with slight hail
-    99: 'fa-bolt', // Thunderstorm with heavy hail
-  };
-  return `<i class="fas ${weatherIcons[weatherCode] || 'fa-question'} weather-icon"></i>`;
+  const icon = WEATHER_MAPPINGS[weatherCode]?.icon || 'fa-question';
+  return `<i class="fas ${icon} weather-icon"></i>`;
 }
 
 /**
@@ -248,37 +272,7 @@ function getWeatherIcon(weatherCode) {
  * @returns {string} - The weather description.
  */
 function getWeatherDescription(weatherCode) {
-  const weatherCodes = {
-    0: 'Clear sky',
-    1: 'Mainly clear',
-    2: 'Partly cloudy',
-    3: 'Overcast',
-    45: 'Fog',
-    48: 'Depositing rime fog',
-    51: 'Light drizzle',
-    53: 'Moderate drizzle',
-    55: 'Dense drizzle',
-    56: 'Light freezing drizzle',
-    57: 'Dense freezing drizzle',
-    61: 'Slight rain',
-    63: 'Moderate rain',
-    65: 'Heavy rain',
-    66: 'Light freezing rain',
-    67: 'Heavy freezing rain',
-    71: 'Slight snowfall',
-    73: 'Moderate snowfall',
-    75: 'Heavy snowfall',
-    77: 'Snow grains',
-    80: 'Slight rain showers',
-    81: 'Moderate rain showers',
-    82: 'Violent rain showers',
-    85: 'Slight snow showers',
-    86: 'Heavy snow showers',
-    95: 'Thunderstorm',
-    96: 'Thunderstorm with slight hail',
-    99: 'Thunderstorm with heavy hail',
-  };
-  return weatherCodes[weatherCode] || 'Unknown weather';
+  return WEATHER_MAPPINGS[weatherCode]?.description || 'Unknown weather';
 }
 
 // --- Search Functionality ---
@@ -288,33 +282,27 @@ function getWeatherDescription(weatherCode) {
  */
 async function handleSearch() {
   const city = citySearch.value.trim();
-  if (!city) return;
+  if (!city || city === lastSearchTerm) return;
 
-  if (city === lastSearchTerm) {
-      //alert('City is the same as the last search. Preventing duplicate.');
-      return; // Prevent duplicate searches
-  }
-  lastSearchTerm = city; // Update the last search term
+  lastSearchTerm = city;
 
-  if (isCityAlreadyDisplayed(city)) {
-    //alert(`${city} is already in the list!`);
-    return;
-  }
+  if (isCityAlreadyDisplayed(city)) return;
 
-  await addNewCityToStorage(city); //Adds the city to session storage if it's not there.
+  await addNewCityToStorage(city);
 
   const cityData = await fetchWeather(city);
   if (cityData) {
     const card = createCityCard(cityData);
-    citiesContainer.prepend(card); // Add the new card to the top
-    citySearch.value = ''; // Clear the search bar
+    citiesContainer.prepend(card);
+    citySearch.value = '';
+    saveSettings();
   }
 }
 
 /**
- * Checks if the city is already displayed in the list of city cards.
- * @param {string} city The city name.
- * @returns {boolean} True if the city is already displayed, false otherwise.
+ * Checks if the city is already displayed.
+ * @param {string} city - The city name.
+ * @returns {boolean} - True if the city is already displayed, false otherwise.
  */
 function isCityAlreadyDisplayed(city) {
   const cityCards = document.querySelectorAll('.card-title');
@@ -323,14 +311,13 @@ function isCityAlreadyDisplayed(city) {
 
 /**
  * Adds a new city to session storage if it's not already there.
- * @param {string} city The city name.
+ * @param {string} city - The city name.
  */
 async function addNewCityToStorage(city) {
   let cities = getFromSessionStorage('cities') || [];
   const cityExists = cities.some(c => c.name.toLowerCase() === city.toLowerCase());
 
   if (!cityExists) {
-    // Fetch the city details from the API
     try {
       const response = await fetch(`${GEOCODING_API_URL}?name=${city}&count=1&language=${DEFAULT_LANGUAGE}&format=json`);
       const data = await response.json();
@@ -339,8 +326,8 @@ async function addNewCityToStorage(city) {
           name: data.results[0].name,
           country: data.results[0].country,
         };
-        cities.push(newCity); // Add the new city to the list
-        saveToSessionStorage('cities', cities); // Update session storage
+        cities.push(newCity);
+        saveToSessionStorage('cities', cities);
       }
     } catch (error) {
       console.error('Error fetching city:', error);
@@ -348,9 +335,7 @@ async function addNewCityToStorage(city) {
   }
 }
 
-
-
-// // --- Autocomplete Functionality ---
+// --- Autocomplete Functionality ---
 
 /**
  * Shows autocomplete suggestions based on the input.
@@ -362,23 +347,22 @@ function showAutocompleteSuggestions(input) {
     city.name.toLowerCase().includes(input.toLowerCase())
   );
 
-  // Clear previous suggestions
   autocompleteDropdown.innerHTML = '';
 
-  // Add new suggestions
   filteredCities.forEach((city, index) => {
     const suggestion = document.createElement('div');
     suggestion.className = `dropdown-item ${index === selectedIndex ? 'selected' : ''}`;
     suggestion.textContent = `${city.name}, ${city.country}`;
+    suggestion.setAttribute('role', 'option');
+    suggestion.setAttribute('aria-selected', index === selectedIndex);
     suggestion.addEventListener('click', () => {
-      citySearch.value = city.name; // Fill the search bar with the selected city
-      autocompleteDropdown.style.display = 'none'; // Hide the dropdown
-      handleSearch(); // Trigger search
+      citySearch.value = city.name;
+      autocompleteDropdown.style.display = 'none';
+      handleSearch();
     });
     autocompleteDropdown.appendChild(suggestion);
   });
 
-  // Show the dropdown if there are suggestions
   autocompleteDropdown.style.display = filteredCities.length > 0 ? 'block' : 'none';
 }
 
@@ -389,20 +373,60 @@ function showAutocompleteSuggestions(input) {
 function updateSelectedSuggestion(suggestions) {
   suggestions.forEach((suggestion, index) => {
     suggestion.classList.toggle('selected', index === selectedIndex);
+    suggestion.setAttribute('aria-selected', index === selectedIndex);
   });
 
-  // Scroll the selected suggestion into view
   if (selectedIndex >= 0 && suggestions[selectedIndex]) {
     suggestions[selectedIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 }
 
-// // --- Event Listeners ---
+// --- Save and Load Settings ---
 
-// Attach event listener to the search button
+/**
+ * Saves the current app settings.
+ */
+async function saveSettings() {
+  const settings = {
+    isSearchBarHidden: searchBarContainer.classList.contains('d-none'),
+    cities: Array.from(citiesContainer.children).map((card) => {
+      const name = card.querySelector('.card-title').textContent.split(',')[0];
+      const country_code = card.querySelector('.card-title').textContent.split(',')[1].trim();
+      return { name, country_code };
+    }),
+  };
+
+  await window.electron.writeSettings(settings);
+  console.log('Settings saved:', settings);
+}
+
+/**
+ * Loads the saved app settings.
+ */
+async function loadSettings() {
+  const settings = await window.electron.readSettings();
+  console.log('Settings loaded:', settings);
+
+  if (settings.isSearchBarHidden) {
+    searchBarContainer.classList.add('d-none');
+  }
+
+  settings.cities.forEach(async (city) => {
+    const cityData = await fetchWeather(city.name);
+    if (cityData) {
+      const card = createCityCard(cityData);
+      citiesContainer.appendChild(card);
+    }
+  });
+}
+
+// Load settings when the app starts
+loadSettings();
+
+// --- Event Listeners ---
+
 searchButton.addEventListener('click', handleSearch);
 
-//  Handle keyboard navigation in the search bar
 citySearch.addEventListener('keydown', (e) => {
   const suggestions = autocompleteDropdown.querySelectorAll('.dropdown-item');
 
@@ -413,66 +437,53 @@ citySearch.addEventListener('keydown', (e) => {
     selectedIndex = Math.max(selectedIndex - 1, -1);
     updateSelectedSuggestion(suggestions);
   } else if (e.key === 'Enter') {
-    e.preventDefault(); // Prevent the default form submission behavior
+    e.preventDefault();
     if (selectedIndex >= 0 && suggestions[selectedIndex]) {
-      citySearch.value = suggestions[selectedIndex].textContent.split(',')[0]; // Fill the search bar
-      autocompleteDropdown.style.display = 'none'; // Hide the dropdown
-      handleSearch(); // Trigger search
+      citySearch.value = suggestions[selectedIndex].textContent.split(',')[0];
+      autocompleteDropdown.style.display = 'none';
+      handleSearch();
     } else {
-      handleSearch(); // Trigger search if no suggestion is selected
+      handleSearch();
     }
   }
 });
 
-
-// // Event listener for input changes in the search bar (for autocomplete)
+let debounceTimer;
 citySearch.addEventListener('input', (e) => {
-  const input = e.target.value.trim();
-  if (input) {
-    showAutocompleteSuggestions(input);
-  } else {
-    autocompleteDropdown.style.display = 'none'; // Hide the dropdown if the input is empty
-  }
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    const input = e.target.value.trim();
+    if (input) {
+      showAutocompleteSuggestions(input);
+    } else {
+      autocompleteDropdown.style.display = 'none';
+    }
+  }, 300);
 });
-// // Hide the dropdown when clicking outside the search bar and dropdown
+
 document.addEventListener('click', (e) => {
   if (!citySearch.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
     autocompleteDropdown.style.display = 'none';
   }
 });
 
-// // --- Electron Integration (if applicable) ---
+// --- Electron Integration ---
 
-// Check if running in Electron environment
-if (typeof require === 'function') {
-  const { ipcRenderer } = require('electron');
+document.getElementById('close-btn').addEventListener('click', () => {
+  window.electron.send('close-window');
+});
 
-  // Close button functionality
-  document.getElementById('close-btn').addEventListener('click', () => {
-    ipcRenderer.send('close-window');
-  });
+document.getElementById('minimize-btn').addEventListener('click', () => {
+  window.electron.send('minimize-window');
+});
 
-  // Minimize button functionality
-  document.getElementById('minimize-btn').addEventListener('click', () => {
-    ipcRenderer.send('minimize-window');
-  });
+searchToggleBtn.addEventListener('click', () => {
+  searchBarContainer.classList.toggle('d-none');
+  saveSettings();
+});
 
-  const searchToggleBtn = document.getElementById('search-toggle-btn');
-  const searchBarContainer = document.getElementById('search-bar-container');
-
-  // Toggle search bar visibility
-  searchToggleBtn.addEventListener('click', () => {
-    searchBarContainer.classList.toggle('d-none');
-  });
-}
-
-const scrollableContainer = document.getElementById('scrollable-container');
-if (scrollableContainer!=null){
+if (scrollableContainer) {
   scrollableContainer.addEventListener('wheel', (event) => {
-      event.preventDefault(); // Prevent default scrolling
-
-      // Adjust the scroll position based on the mouse wheel delta
-      scrollableContainer.scrollTop += event.deltaY;
+    scrollableContainer.scrollTop += event.deltaY;
   });
 }
-
