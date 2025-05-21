@@ -1,6 +1,7 @@
-# Weather App
+# Weathely - A Weather App
 
 A cross-platform Electron app to display weather for cities worldwide. Each city can be easily added and removed through the search bar. The searchbar can be hided to have full screen weather city status. 
+
 ![alt text](./docs/weatherly-main.png "Weatherlyapp")
 
 
@@ -15,7 +16,9 @@ A cross-platform Electron app to display weather for cities worldwide. Each city
 - **Bootstrap**: For responsive and modern UI.
 - **Open-Meteo API**: For weather and geocoding data.
 - **Jest**: For unit and integration testing.
-
+# Local Deployment
+The installable files of weatherly application is generated through the GitHub pipeline for the different type of OSes. 
+In case you aim at changing the code, you can simply clone, change and run the code as instructured below.
 ## Setup
 1. Clone the repository:
    ```bash
