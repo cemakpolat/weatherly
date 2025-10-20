@@ -1283,7 +1283,9 @@ async function loadRadarMap(card, cityName) {
  */
 async function handleSearch() {
   const city = citySearch.value.trim();
-  if (!city || city === lastSearchTerm) {return;}
+  if (!city || city === lastSearchTerm) {
+    return;
+  }
 
   lastSearchTerm = city;
 
