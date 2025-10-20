@@ -98,7 +98,9 @@ describe('Renderer Process Tests', () => {
         })
       );
 
-      await expect(fetchJson('http://example.com/data.json')).rejects.toThrow('HTTP error! Status: 404');
+      await expect(fetchJson('http://example.com/data.json')).rejects.toThrow(
+        'HTTP error! Status: 404'
+      );
     });
 
     it('saveToSessionStorage should save data to session storage', () => {
@@ -138,14 +140,22 @@ describe('Renderer Process Tests', () => {
       const consoleErrorSpy = jest.spyOn(console, 'error');
 
       await loadCities();
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error loading cities:', new Error('Failed to load'));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error loading cities:',
+        new Error('Failed to load')
+      );
     });
   });
 
   describe('Weather API Functions', () => {
     it('fetchWeather should fetch weather data for a valid city', async () => {
-      const mockGeocodingData = { results: [{ latitude: 40.71, longitude: -74.01, name: 'New York', country_code: 'US' }] };
-      const mockWeatherData = { current_weather: { temperature: 25, weathercode: 0 }, hourly: { time: [], temperature_2m: [] } };
+      const mockGeocodingData = {
+        results: [{ latitude: 40.71, longitude: -74.01, name: 'New York', country_code: 'US' }],
+      };
+      const mockWeatherData = {
+        current_weather: { temperature: 25, weathercode: 0 },
+        hourly: { time: [], temperature_2m: [] },
+      };
 
       global.fetch = jest
         .fn()
@@ -160,7 +170,9 @@ describe('Renderer Process Tests', () => {
 
       const weatherData = await fetchWeather('New York');
 
-      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('geocoding-api.open-meteo.com/v1/search'));
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('geocoding-api.open-meteo.com/v1/search')
+      );
       expect(fetch).toHaveBeenCalledWith(expect.stringContaining('api.open-meteo.com/v1/forecast'));
 
       expect(weatherData).toEqual({
@@ -187,7 +199,9 @@ describe('Renderer Process Tests', () => {
     });
 
     it('fetchGeocodingData should fetch geocoding data for a city', async () => {
-      const mockData = { results: [{ latitude: 40.71, longitude: -74.01, name: 'New York', country_code: 'US' }] };
+      const mockData = {
+        results: [{ latitude: 40.71, longitude: -74.01, name: 'New York', country_code: 'US' }],
+      };
       global.fetch = jest.fn(() =>
         Promise.resolve({
           ok: true,
@@ -195,12 +209,17 @@ describe('Renderer Process Tests', () => {
         })
       );
       const data = await fetchGeocodingData('New York');
-      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('geocoding-api.open-meteo.com/v1/search'));
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('geocoding-api.open-meteo.com/v1/search')
+      );
       expect(data).toEqual(mockData);
     });
 
     it('fetchWeatherData should fetch weather data for given coordinates', async () => {
-      const mockData = { current_weather: { temperature: 25, weathercode: 0 }, hourly: { time: [], temperature_2m: [] } };
+      const mockData = {
+        current_weather: { temperature: 25, weathercode: 0 },
+        hourly: { time: [], temperature_2m: [] },
+      };
       global.fetch = jest.fn(() =>
         Promise.resolve({
           ok: true,
@@ -218,7 +237,10 @@ describe('Renderer Process Tests', () => {
       const cityData = {
         name: 'New York',
         country_code: 'US',
-        weather: { current_weather: { temperature: 25, weathercode: 0 }, hourly: { time: [], temperature_2m: [] } },
+        weather: {
+          current_weather: { temperature: 25, weathercode: 0 },
+          hourly: { time: [], temperature_2m: [] },
+        },
       };
       const card = createCityCard(cityData);
       expect(card).toBeInstanceOf(HTMLElement);
@@ -229,7 +251,10 @@ describe('Renderer Process Tests', () => {
       const cityData = {
         name: 'New York',
         country_code: 'US',
-        weather: { current_weather: { temperature: 25, weathercode: 0 }, hourly: { time: [], temperature_2m: [] } },
+        weather: {
+          current_weather: { temperature: 25, weathercode: 0 },
+          hourly: { time: [], temperature_2m: [] },
+        },
       };
       const card = createCityCard(cityData);
       const removeButton = card.querySelector('.remove-button');
@@ -286,8 +311,13 @@ describe('Renderer Process Tests', () => {
 
     it('handleSearch should fetch weather data and create a city card', async () => {
       citySearch.value = 'New York';
-      const mockGeocodingData = { results: [{ latitude: 40.71, longitude: -74.01, name: 'New York', country_code: 'US' }] };
-      const mockWeatherData = { current_weather: { temperature: 25, weathercode: 0 }, hourly: { time: [], temperature_2m: [] } };
+      const mockGeocodingData = {
+        results: [{ latitude: 40.71, longitude: -74.01, name: 'New York', country_code: 'US' }],
+      };
+      const mockWeatherData = {
+        current_weather: { temperature: 25, weathercode: 0 },
+        hourly: { time: [], temperature_2m: [] },
+      };
 
       global.fetch = jest
         .fn()
@@ -302,9 +332,13 @@ describe('Renderer Process Tests', () => {
 
       await handleSearch();
 
-      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('geocoding-api.open-meteo.com/v1/search'));
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('geocoding-api.open-meteo.com/v1/search')
+      );
       expect(fetch).toHaveBeenCalledWith(expect.stringContaining('api.open-meteo.com/v1/forecast'));
-      expect(citiesContainer.firstChild.querySelector('.card-title').textContent).toContain('New York, US');
+      expect(citiesContainer.firstChild.querySelector('.card-title').textContent).toContain(
+        'New York, US'
+      );
       expect(citySearch.value).toBe('');
     });
 
@@ -319,7 +353,9 @@ describe('Renderer Process Tests', () => {
     });
 
     it('addNewCityToStorage should add a new city to session storage if it is not already there', async () => {
-      const mockGeocodingData = { results: [{ latitude: 40.71, longitude: -74.01, name: 'New York', country: 'US' }] };
+      const mockGeocodingData = {
+        results: [{ latitude: 40.71, longitude: -74.01, name: 'New York', country: 'US' }],
+      };
 
       global.fetch = jest.fn(() =>
         Promise.resolve({
@@ -338,7 +374,9 @@ describe('Renderer Process Tests', () => {
       const mockCities = [{ name: 'New York', country: 'USA' }];
       saveToSessionStorage('cities', mockCities);
 
-      const mockGeocodingData = { results: [{ latitude: 40.71, longitude: -74.01, name: 'New York', country: 'US' }] };
+      const mockGeocodingData = {
+        results: [{ latitude: 40.71, longitude: -74.01, name: 'New York', country: 'US' }],
+      };
       global.fetch = jest.fn(() =>
         Promise.resolve({
           ok: true,
@@ -400,7 +438,7 @@ describe('Renderer Process Tests', () => {
     it('searchButton click should call handleSearch', async () => {
       const handleSearchSpy = jest.spyOn(global, 'handleSearch');
       searchButton.click();
-      await Promise.resolve();  // Wait for async operations in handleSearch
+      await Promise.resolve(); // Wait for async operations in handleSearch
       expect(handleSearchSpy).toHaveBeenCalled();
     });
 
@@ -447,13 +485,17 @@ describe('Renderer Process Tests', () => {
     it('citySearch input should call showAutocompleteSuggestions', () => {
       const showAutocompleteSuggestionsSpy = jest.spyOn(global, 'showAutocompleteSuggestions');
       citySearch.value = 'New';
-      citySearch.dispatchEvent(new dom.window.InputEvent('input', { bubbles: true, cancelable: true }));
+      citySearch.dispatchEvent(
+        new dom.window.InputEvent('input', { bubbles: true, cancelable: true })
+      );
       expect(showAutocompleteSuggestionsSpy).toHaveBeenCalledWith('New');
     });
 
     it('document click outside search bar and dropdown should hide autocompleteDropdown', () => {
       autocompleteDropdown.style.display = 'block';
-      document.body.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true, cancelable: true }));
+      document.body.dispatchEvent(
+        new dom.window.MouseEvent('click', { bubbles: true, cancelable: true })
+      );
       expect(autocompleteDropdown.style.display).toBe('none');
     });
   });

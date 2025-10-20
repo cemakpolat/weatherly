@@ -17,7 +17,12 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      - run: npm install
+      - run: npm ci
+
+      - name: Run tests
+        run: npm test
+        continue-on-error: true
+
       - run: npm run build:win
         env:
             GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -26,6 +31,7 @@ jobs:
         with:
           name: windows-build
           path: dist/*.exe
+          retention-days: 30
 
   build-macos:
     name: Build macOS
@@ -38,18 +44,33 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      - run: npm install
+      - run: npm ci
+
+      - name: Run tests
+        run: npm test
+        continue-on-error: true
+
       - run: npm run build:mac
         env:
             GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify DMG
         run: |
-          hdiutil verify dist/Weatherly-1.0.0.dmg
+          # Dynamically find and verify the DMG file
+          DMG_FILE=$(find dist -name "*.dmg" -type f | head -n 1)
+          if [ -n "$DMG_FILE" ]; then
+            echo "Verifying DMG: $DMG_FILE"
+            hdiutil verify "$DMG_FILE"
+          else
+            echo "No DMG file found to verify"
+            exit 1
+          fi
+
       - uses: actions/upload-artifact@v4
         with:
           name: macos-build
           path: dist/*.dmg
+          retention-days: 30
 
   build-linux:
     name: Build Linux
@@ -62,7 +83,12 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      - run: npm install
+      - run: npm ci
+
+      - name: Run tests
+        run: npm test
+        continue-on-error: true
+
       - run: npm run build:linux
         env:
             GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -71,6 +97,7 @@ jobs:
         with:
           name: linux-build
           path: dist/*.AppImage
+          retention-days: 30
 
   create-release:
     name: Create Release
@@ -80,15 +107,46 @@ jobs:
       contents: write
       actions: write
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
 
+      - name: Generate checksums
+        run: |
+          cd artifacts
+          find . -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" \) -exec sha256sum {} \; > ../checksums.txt
+          cd ..
+          echo "## SHA256 Checksums" >> release_notes.md
+          echo '```' >> release_notes.md
+          cat checksums.txt >> release_notes.md
+          echo '```' >> release_notes.md
+
+      - name: Create release notes
+        run: |
+          echo "# Weatherly ${{ github.ref_name }}" > release_notes_full.md
+          echo "" >> release_notes_full.md
+          echo "## Downloads" >> release_notes_full.md
+          echo "" >> release_notes_full.md
+          echo "- **Windows**: \`Weatherly-Setup-*.exe\`" >> release_notes_full.md
+          echo "- **macOS**: \`Weatherly-*.dmg\`" >> release_notes_full.md
+          echo "- **Linux**: \`Weatherly-*.AppImage\`" >> release_notes_full.md
+          echo "" >> release_notes_full.md
+          echo "## What's Changed" >> release_notes_full.md
+          echo "See the [IMPROVEMENTS.md](https://github.com/${{ github.repository }}/blob/main/IMPROVEMENTS.md) for details." >> release_notes_full.md
+          echo "" >> release_notes_full.md
+          cat release_notes.md >> release_notes_full.md
+
       - uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
+          name: Weatherly ${{ github.ref_name }}
+          body_path: release_notes_full.md
           files: |
             artifacts/windows-build/*
             artifacts/macos-build/*
             artifacts/linux-build/*
+            checksums.txt
           draft: false
+          prerelease: false
