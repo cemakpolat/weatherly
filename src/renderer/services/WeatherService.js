@@ -76,7 +76,9 @@ export class GeolocationService {
         return position;
       } catch (error) {
         console.log('Falling back to IP-based geolocation (less accurate)');
-        console.log('NOTE: IP geolocation may show the wrong city. Please grant location permission for accurate detection.');
+        console.log(
+          'NOTE: IP geolocation may show the wrong city. Please grant location permission for accurate detection.'
+        );
       }
     }
 

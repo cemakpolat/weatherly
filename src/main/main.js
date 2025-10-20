@@ -21,14 +21,16 @@ function createWindow() {
   });
 
   // Handle geolocation permission requests
-  mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
-    if (permission === 'geolocation') {
-      console.log('Geolocation permission requested - granting');
-      callback(true); // Grant permission
-    } else {
-      callback(false);
+  mainWindow.webContents.session.setPermissionRequestHandler(
+    (webContents, permission, callback) => {
+      if (permission === 'geolocation') {
+        console.log('Geolocation permission requested - granting');
+        callback(true); // Grant permission
+      } else {
+        callback(false);
+      }
     }
-  });
+  );
 
   mainWindow.loadFile('src/renderer/index.html');
 

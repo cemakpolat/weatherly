@@ -34,6 +34,9 @@ import {
 
 import { WeatherAnimationManager } from './services/animations/WeatherAnimationManager.js';
 
+// Leaflet is loaded globally via CDN in index.html
+// Access it via window.L
+
 // --- DOM Elements ---
 const citiesContainer = document.getElementById('cities');
 const citySearch = document.getElementById('citySearch');
@@ -208,7 +211,11 @@ async function handleGeolocate() {
 
     // Warn user if using IP-based location (less accurate)
     if (coords.source === 'ip') {
-      showToast('⚠️ Using IP-based location (may be inaccurate). Please enable location permissions for accurate results.', 'warning', 5000);
+      showToast(
+        '⚠️ Using IP-based location (may be inaccurate). Please enable location permissions for accurate results.',
+        'warning',
+        5000
+      );
     }
 
     // Always use reverse geocoding for more accurate city name
@@ -365,6 +372,7 @@ function createCityCard(cityData) {
           <button class="card-tab-btn" data-tab="details">Details</button>
           <button class="card-tab-btn" data-tab="history">History</button>
           <button class="card-tab-btn" data-tab="chart">Chart</button>
+          <button class="card-tab-btn" data-tab="radar">Radar</button>
         </div>
 
         <div class="card-tab-content">
@@ -436,6 +444,27 @@ function createCityCard(cityData) {
               <canvas id="weather-chart-${name.replace(/\s+/g, '-')}" width="320" height="240"></canvas>
             </div>
           </div>
+
+          <!-- Radar Tab -->
+          <div class="card-tab-pane" data-tab-pane="radar">
+            <div class="radar-loading">
+              <i class="fas fa-spinner fa-spin"></i> Loading radar map...
+            </div>
+            <div class="radar-content" style="display: none;">
+              <div id="radar-map-${name.replace(/\s+/g, '-')}" class="radar-map-container"></div>
+              <div class="radar-controls">
+                <label class="radar-layer-toggle">
+                  <input type="checkbox" class="radar-layer-precipitation" checked> Precipitation
+                </label>
+                <label class="radar-layer-toggle">
+                  <input type="checkbox" class="radar-layer-clouds"> Clouds
+                </label>
+                <label class="radar-layer-toggle">
+                  <input type="checkbox" class="radar-layer-temperature"> Temperature
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -501,7 +530,7 @@ let draggedIndex = null;
  */
 function setupDragAndDrop(card) {
   // Drag start event
-  card.addEventListener('dragstart', (e) => {
+  card.addEventListener('dragstart', e => {
     draggedCard = card;
     draggedIndex = Array.from(citiesContainer.children).indexOf(card);
     card.classList.add('dragging');
@@ -517,7 +546,7 @@ function setupDragAndDrop(card) {
   });
 
   // Drag over event
-  card.addEventListener('dragover', (e) => {
+  card.addEventListener('dragover', e => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
 
@@ -538,7 +567,7 @@ function setupDragAndDrop(card) {
   });
 
   // Drop event
-  card.addEventListener('drop', (e) => {
+  card.addEventListener('drop', e => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -766,6 +795,19 @@ async function toggleCardTab(card, tab) {
     }
   }
 
+  // Load radar map if Radar tab is selected and not already loaded
+  if (tab === 'radar') {
+    const radarPane = card.querySelector('[data-tab-pane="radar"]');
+    const radarContent = radarPane.querySelector('.radar-content');
+    const radarMap = radarContent.querySelector('.radar-map-container');
+
+    // Only load if not already loaded (check if map instance exists)
+    if (!radarMap._leafletMap) {
+      const cityName = card.getAttribute('data-city-name');
+      await loadRadarMap(card, cityName);
+    }
+  }
+
   // Reapply masonry layout after tab changes
   setTimeout(() => {
     if (typeof applyMasonryLayout === 'function') {
@@ -818,10 +860,10 @@ async function loadHistoricalData(card, cityName) {
     historyLoading.style.display = 'none';
     historyContent.style.display = 'block';
     historyContent.innerHTML = historyHTML;
-
   } catch (error) {
     console.error('Error loading historical data:', error);
-    historyLoading.innerHTML = '<p class="text-muted small"><i class="fas fa-exclamation-circle"></i> Failed to load historical data</p>';
+    historyLoading.innerHTML =
+      '<p class="text-muted small"><i class="fas fa-exclamation-circle"></i> Failed to load historical data</p>';
   }
 
   // Reapply masonry layout
@@ -836,13 +878,8 @@ async function loadHistoricalData(card, cityName) {
  * @returns {string} - HTML string for historical data.
  */
 function generateHistoricalDataHTML(dailyData) {
-  const {
-    time,
-    temperature_2m_max,
-    temperature_2m_min,
-    precipitation_sum,
-    weathercode,
-  } = dailyData;
+  const { time, temperature_2m_max, temperature_2m_min, precipitation_sum, weathercode } =
+    dailyData;
 
   const historyItems = [];
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -938,17 +975,17 @@ async function loadChartData(card, cityName) {
       ...forecastData.daily.time.map(t => {
         const date = new Date(t);
         return `${date.getMonth() + 1}/${date.getDate()}`;
-      })
+      }),
     ];
 
     const maxTemps = [
       ...historyData.daily.temperature_2m_max,
-      ...forecastData.daily.temperature_2m_max
+      ...forecastData.daily.temperature_2m_max,
     ];
 
     const minTemps = [
       ...historyData.daily.temperature_2m_min,
-      ...forecastData.daily.temperature_2m_min
+      ...forecastData.daily.temperature_2m_min,
     ];
 
     // Render simple canvas-based chart
@@ -957,10 +994,10 @@ async function loadChartData(card, cityName) {
     // Update UI
     chartLoading.style.display = 'none';
     chartContent.style.display = 'block';
-
   } catch (error) {
     console.error('Error loading chart data:', error);
-    chartLoading.innerHTML = '<p class="text-muted small"><i class="fas fa-exclamation-circle"></i> Failed to load chart data</p>';
+    chartLoading.innerHTML =
+      '<p class="text-muted small"><i class="fas fa-exclamation-circle"></i> Failed to load chart data</p>';
   }
 
   // Reapply masonry layout
@@ -1021,7 +1058,7 @@ function renderSimpleChart(canvas, labels, maxTemps, minTemps, historyLength) {
   ctx.setLineDash([]);
 
   // Function to convert temperature to y coordinate
-  const tempToY = (temp) => {
+  const tempToY = temp => {
     return height - padding - ((temp - minTemp) / tempRange) * chartHeight;
   };
 
@@ -1103,6 +1140,140 @@ function renderSimpleChart(canvas, labels, maxTemps, minTemps, historyLength) {
 
   // Store chart instance flag
   canvas._chartInstance = true;
+}
+
+/**
+ * Loads and renders the radar map for a city.
+ * @param {HTMLElement} card - The city card element.
+ * @param {string} cityName - The city name.
+ */
+async function loadRadarMap(card, cityName) {
+  const radarPane = card.querySelector('[data-tab-pane="radar"]');
+  const radarLoading = radarPane.querySelector('.radar-loading');
+  const radarContent = radarPane.querySelector('.radar-content');
+  const radarMapContainer = radarContent.querySelector('.radar-map-container');
+
+  try {
+    // Get city coordinates first
+    const geocodeData = await fetchGeocodingData(cityName);
+    if (!geocodeData.results || geocodeData.results.length === 0) {
+      throw new Error('City not found');
+    }
+
+    const { latitude, longitude } = geocodeData.results[0];
+
+    // Initialize Leaflet map (use window.L since it's loaded via CDN)
+    const L = window.L;
+    if (!L) {
+      throw new Error('Leaflet library not loaded');
+    }
+
+    // Create map centered on city coordinates
+    const map = L.map(radarMapContainer.id, {
+      center: [latitude, longitude],
+      zoom: 8,
+      zoomControl: true,
+      scrollWheelZoom: true,
+    });
+
+    // Add OpenStreetMap base layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(map);
+
+    // Add city marker
+    L.marker([latitude, longitude]).addTo(map).bindPopup(`<b>${cityName}</b>`).openPopup();
+
+    // Create weather overlay layers (using OpenWeatherMap)
+    const OWM_API_KEY = 'your-api-key-here'; // Note: OpenWeatherMap requires API key for tiles
+
+    // Precipitation layer
+    const precipLayer = L.tileLayer(
+      `https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${OWM_API_KEY}`,
+      {
+        attribution: '&copy; <a href="https://openweathermap.org">OpenWeatherMap</a>',
+        opacity: 0.6,
+        maxZoom: 19,
+      }
+    );
+
+    // Clouds layer
+    const cloudsLayer = L.tileLayer(
+      `https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${OWM_API_KEY}`,
+      {
+        attribution: '&copy; <a href="https://openweathermap.org">OpenWeatherMap</a>',
+        opacity: 0.5,
+        maxZoom: 19,
+      }
+    );
+
+    // Temperature layer
+    const tempLayer = L.tileLayer(
+      `https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${OWM_API_KEY}`,
+      {
+        attribution: '&copy; <a href="https://openweathermap.org">OpenWeatherMap</a>',
+        opacity: 0.6,
+        maxZoom: 19,
+      }
+    );
+
+    // Add precipitation layer by default (since checkbox is checked)
+    precipLayer.addTo(map);
+
+    // Store layer references on the map container for toggle functionality
+    radarMapContainer._precipLayer = precipLayer;
+    radarMapContainer._cloudsLayer = cloudsLayer;
+    radarMapContainer._tempLayer = tempLayer;
+    radarMapContainer._leafletMap = map;
+
+    // Set up layer toggle event listeners
+    const precipToggle = radarPane.querySelector('.radar-layer-precipitation');
+    const cloudsToggle = radarPane.querySelector('.radar-layer-clouds');
+    const tempToggle = radarPane.querySelector('.radar-layer-temperature');
+
+    precipToggle.addEventListener('change', e => {
+      if (e.target.checked) {
+        precipLayer.addTo(map);
+      } else {
+        map.removeLayer(precipLayer);
+      }
+    });
+
+    cloudsToggle.addEventListener('change', e => {
+      if (e.target.checked) {
+        cloudsLayer.addTo(map);
+      } else {
+        map.removeLayer(cloudsLayer);
+      }
+    });
+
+    tempToggle.addEventListener('change', e => {
+      if (e.target.checked) {
+        tempLayer.addTo(map);
+      } else {
+        map.removeLayer(tempLayer);
+      }
+    });
+
+    // Update UI
+    radarLoading.style.display = 'none';
+    radarContent.style.display = 'block';
+
+    // Force map to refresh its size after becoming visible
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+  } catch (error) {
+    console.error('Error loading radar map:', error);
+    radarLoading.innerHTML =
+      '<p class="text-muted small"><i class="fas fa-exclamation-circle"></i> Failed to load radar map</p>';
+  }
+
+  // Reapply masonry layout
+  setTimeout(() => {
+    applyMasonryLayout();
+  }, 100);
 }
 
 // --- Search Functionality ---
@@ -1794,7 +1965,13 @@ document.getElementById('alerts-enabled').addEventListener('change', async () =>
   showToast('Alert settings saved', 'success', 2000);
 });
 
-['alert-thunderstorm', 'alert-heavy-rain', 'alert-heavy-snow', 'alert-extreme-temp', 'alert-high-precip'].forEach(id => {
+[
+  'alert-thunderstorm',
+  'alert-heavy-rain',
+  'alert-heavy-snow',
+  'alert-extreme-temp',
+  'alert-high-precip',
+].forEach(id => {
   document.getElementById(id).addEventListener('change', async () => {
     await saveAlertPreferences();
   });
@@ -1823,7 +2000,10 @@ function applyMasonryLayout() {
 
   // Calculate number of columns based on container width
   const containerWidth = container.offsetWidth;
-  const numColumns = Math.max(1, Math.floor((containerWidth + columnGap) / (cardWidth + columnGap)));
+  const numColumns = Math.max(
+    1,
+    Math.floor((containerWidth + columnGap) / (cardWidth + columnGap))
+  );
   masonryColumns = numColumns;
 
   console.log(`[Masonry] Container width: ${containerWidth}px, Columns: ${numColumns}`);
@@ -1859,7 +2039,9 @@ function applyMasonryLayout() {
     item.style.transition = 'top 0.3s ease, left 0.3s ease, opacity 0.3s ease';
 
     if (index === 0) {
-      console.log(`[Masonry] First card positioned at (${x}, ${y}), height: ${item.offsetHeight}px`);
+      console.log(
+        `[Masonry] First card positioned at (${x}, ${y}), height: ${item.offsetHeight}px`
+      );
     }
 
     // Update column height
@@ -1871,7 +2053,10 @@ function applyMasonryLayout() {
   container.style.height = `${maxHeight}px`;
   container.style.position = 'relative';
 
-  console.log(`[Masonry] Layout complete. Container height: ${maxHeight}px, Column heights:`, columnHeights);
+  console.log(
+    `[Masonry] Layout complete. Container height: ${maxHeight}px, Column heights:`,
+    columnHeights
+  );
 }
 
 /**

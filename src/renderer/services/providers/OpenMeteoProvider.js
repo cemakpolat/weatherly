@@ -78,8 +78,10 @@ export class OpenMeteoProvider extends IWeatherProvider {
         latitude: latitude.toString(),
         longitude: longitude.toString(),
         current_weather: 'true',
-        hourly: 'temperature_2m,weathercode,relative_humidity_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,uv_index',
-        daily: 'temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,precipitation_probability_max,sunrise,sunset,uv_index_max',
+        hourly:
+          'temperature_2m,weathercode,relative_humidity_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,uv_index',
+        daily:
+          'temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,precipitation_probability_max,sunrise,sunset,uv_index_max',
         timezone: 'auto',
       });
 
@@ -88,7 +90,10 @@ export class OpenMeteoProvider extends IWeatherProvider {
 
       return data;
     } catch (error) {
-      console.error(`[${this.getProviderName()}] Weather fetch error for coordinates (${latitude}, ${longitude}):`, error);
+      console.error(
+        `[${this.getProviderName()}] Weather fetch error for coordinates (${latitude}, ${longitude}):`,
+        error
+      );
       return null;
     }
   }
@@ -107,7 +112,10 @@ export class OpenMeteoProvider extends IWeatherProvider {
       }
 
       // Then fetch weather for those coordinates
-      const weatherData = await this.getWeatherByCoordinates(geocoding.latitude, geocoding.longitude);
+      const weatherData = await this.getWeatherByCoordinates(
+        geocoding.latitude,
+        geocoding.longitude
+      );
       if (!weatherData) {
         throw new Error('Weather data not available');
       }

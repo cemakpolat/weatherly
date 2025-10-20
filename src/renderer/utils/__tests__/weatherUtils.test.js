@@ -25,14 +25,24 @@ describe('Weather Utilities', () => {
     });
 
     it('should format temperature in Celsius by default', () => {
-      expect(formatTemperature(25, 'celsius')).toBe('<span class="temp-value">25</span><span class="temp-unit">°C</span>');
-      expect(formatTemperature(0, 'celsius')).toBe('<span class="temp-value">0</span><span class="temp-unit">°C</span>');
-      expect(formatTemperature(-10, 'celsius')).toBe('<span class="temp-value">-10</span><span class="temp-unit">°C</span>');
+      expect(formatTemperature(25, 'celsius')).toBe(
+        '<span class="temp-value">25</span><span class="temp-unit">°C</span>'
+      );
+      expect(formatTemperature(0, 'celsius')).toBe(
+        '<span class="temp-value">0</span><span class="temp-unit">°C</span>'
+      );
+      expect(formatTemperature(-10, 'celsius')).toBe(
+        '<span class="temp-value">-10</span><span class="temp-unit">°C</span>'
+      );
     });
 
     it('should format temperature in Fahrenheit when specified', () => {
-      expect(formatTemperature(25, 'fahrenheit')).toBe('<span class="temp-value">77</span><span class="temp-unit">°F</span>');
-      expect(formatTemperature(0, 'fahrenheit')).toBe('<span class="temp-value">32</span><span class="temp-unit">°F</span>');
+      expect(formatTemperature(25, 'fahrenheit')).toBe(
+        '<span class="temp-value">77</span><span class="temp-unit">°F</span>'
+      );
+      expect(formatTemperature(0, 'fahrenheit')).toBe(
+        '<span class="temp-value">32</span><span class="temp-unit">°F</span>'
+      );
     });
   });
 
@@ -131,7 +141,7 @@ describe('Weather Utilities', () => {
   });
 
   describe('Severe Weather Detection', () => {
-    const mockFormatTemp = (temp) => `${temp}°C`;
+    const mockFormatTemp = temp => `${temp}°C`;
 
     it('should detect thunderstorm', () => {
       const weatherData = {

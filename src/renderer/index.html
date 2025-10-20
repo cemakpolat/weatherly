@@ -12,6 +12,12 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -75,7 +81,11 @@
           <div class="col-md-8 col-lg-6">
             <div class="settings-card p-4">
               <div class="d-flex align-items-center mb-4">
-                <button id="back-to-main-btn" class="btn btn-link text-white p-0 me-3" title="Back to main page">
+                <button
+                  id="back-to-main-btn"
+                  class="btn btn-link text-white p-0 me-3"
+                  title="Back to main page"
+                >
                   <i class="fas fa-arrow-left fa-2x"></i>
                 </button>
                 <h2 class="mb-0">Settings</h2>
@@ -88,17 +98,25 @@
                   Weather Animations
                 </h4>
                 <p class="text-muted small mb-3">
-                  Enable animated weather effects for individual cities. Animations will appear inside city cards based on current weather conditions.
+                  Enable animated weather effects for individual cities. Animations will appear
+                  inside city cards based on current weather conditions.
                 </p>
 
                 <div class="settings-option mb-3">
                   <div class="d-flex justify-content-between align-items-center">
                     <div>
-                      <label for="global-animations-toggle" class="form-label mb-0">Enable Weather Animations</label>
+                      <label for="global-animations-toggle" class="form-label mb-0"
+                        >Enable Weather Animations</label
+                      >
                       <div class="small text-muted">Turn on/off animations for all cities</div>
                     </div>
                     <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" id="global-animations-toggle" checked>
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="global-animations-toggle"
+                        checked
+                      />
                     </div>
                   </div>
                 </div>
@@ -113,9 +131,11 @@
 
                 <div class="settings-option mb-2">
                   <div class="d-flex justify-content-between align-items-center">
-                    <label for="alerts-enabled" class="form-label mb-0">Enable Weather Alerts</label>
+                    <label for="alerts-enabled" class="form-label mb-0"
+                      >Enable Weather Alerts</label
+                    >
                     <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" id="alerts-enabled" checked>
+                      <input class="form-check-input" type="checkbox" id="alerts-enabled" checked />
                     </div>
                   </div>
                 </div>
@@ -123,9 +143,16 @@
                 <div id="alert-types" class="ms-3 mt-2">
                   <div class="settings-option-small mb-2">
                     <div class="d-flex justify-content-between align-items-center">
-                      <label for="alert-thunderstorm" class="form-label mb-0 small">Thunderstorms</label>
+                      <label for="alert-thunderstorm" class="form-label mb-0 small"
+                        >Thunderstorms</label
+                      >
                       <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="alert-thunderstorm" checked>
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="alert-thunderstorm"
+                          checked
+                        />
                       </div>
                     </div>
                   </div>
@@ -133,7 +160,12 @@
                     <div class="d-flex justify-content-between align-items-center">
                       <label for="alert-heavy-rain" class="form-label mb-0 small">Heavy Rain</label>
                       <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="alert-heavy-rain" checked>
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="alert-heavy-rain"
+                          checked
+                        />
                       </div>
                     </div>
                   </div>
@@ -141,23 +173,42 @@
                     <div class="d-flex justify-content-between align-items-center">
                       <label for="alert-heavy-snow" class="form-label mb-0 small">Heavy Snow</label>
                       <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="alert-heavy-snow" checked>
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="alert-heavy-snow"
+                          checked
+                        />
                       </div>
                     </div>
                   </div>
                   <div class="settings-option-small mb-2">
                     <div class="d-flex justify-content-between align-items-center">
-                      <label for="alert-extreme-temp" class="form-label mb-0 small">Extreme Temperature</label>
+                      <label for="alert-extreme-temp" class="form-label mb-0 small"
+                        >Extreme Temperature</label
+                      >
                       <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="alert-extreme-temp" checked>
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="alert-extreme-temp"
+                          checked
+                        />
                       </div>
                     </div>
                   </div>
                   <div class="settings-option-small mb-2">
                     <div class="d-flex justify-content-between align-items-center">
-                      <label for="alert-high-precip" class="form-label mb-0 small">High Precipitation</label>
+                      <label for="alert-high-precip" class="form-label mb-0 small"
+                        >High Precipitation</label
+                      >
                       <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="alert-high-precip" checked>
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="alert-high-precip"
+                          checked
+                        />
                       </div>
                     </div>
                   </div>
@@ -170,48 +221,86 @@
                   <i class="fas fa-palette me-2"></i>
                   Background Theme
                 </h4>
-                <p class="text-muted small mb-3">
-                  Choose a background theme for the app
-                </p>
+                <p class="text-muted small mb-3">Choose a background theme for the app</p>
 
                 <div class="theme-grid">
                   <div class="theme-option" data-theme="purple-blue">
-                    <div class="theme-preview" style="background: linear-gradient(135deg, #6a11cb, #2575fc, #ff7e5f, #feb47b);"></div>
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #6a11cb, #2575fc, #ff7e5f, #feb47b);
+                      "
+                    ></div>
                     <span class="theme-name">Purple Blue</span>
                     <i class="fas fa-check theme-check"></i>
                   </div>
                   <div class="theme-option" data-theme="ocean-breeze">
-                    <div class="theme-preview" style="background: linear-gradient(135deg, #2193b0, #6dd5ed, #00d2ff, #3a7bd5);"></div>
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #2193b0, #6dd5ed, #00d2ff, #3a7bd5);
+                      "
+                    ></div>
                     <span class="theme-name">Ocean Breeze</span>
                     <i class="fas fa-check theme-check"></i>
                   </div>
                   <div class="theme-option" data-theme="sunset-glow">
-                    <div class="theme-preview" style="background: linear-gradient(135deg, #ff6e7f, #bfe9ff, #ffa06f, #ff758c);"></div>
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #ff6e7f, #bfe9ff, #ffa06f, #ff758c);
+                      "
+                    ></div>
                     <span class="theme-name">Sunset Glow</span>
                     <i class="fas fa-check theme-check"></i>
                   </div>
                   <div class="theme-option" data-theme="forest-green">
-                    <div class="theme-preview" style="background: linear-gradient(135deg, #134e5e, #71b280, #2c5f2d, #97cc04);"></div>
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #134e5e, #71b280, #2c5f2d, #97cc04);
+                      "
+                    ></div>
                     <span class="theme-name">Forest Green</span>
                     <i class="fas fa-check theme-check"></i>
                   </div>
                   <div class="theme-option" data-theme="night-sky">
-                    <div class="theme-preview" style="background: linear-gradient(135deg, #0f2027, #203a43, #2c5364, #1a3a52);"></div>
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364, #1a3a52);
+                      "
+                    ></div>
                     <span class="theme-name">Night Sky</span>
                     <i class="fas fa-check theme-check"></i>
                   </div>
                   <div class="theme-option" data-theme="aurora">
-                    <div class="theme-preview" style="background: linear-gradient(135deg, #00c6ff, #0072ff, #00d4ff, #7b68ee);"></div>
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #00c6ff, #0072ff, #00d4ff, #7b68ee);
+                      "
+                    ></div>
                     <span class="theme-name">Aurora</span>
                     <i class="fas fa-check theme-check"></i>
                   </div>
                   <div class="theme-option" data-theme="warm-sunset">
-                    <div class="theme-preview" style="background: linear-gradient(135deg, #ff512f, #dd2476, #f09819, #ff512f);"></div>
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #ff512f, #dd2476, #f09819, #ff512f);
+                      "
+                    ></div>
                     <span class="theme-name">Warm Sunset</span>
                     <i class="fas fa-check theme-check"></i>
                   </div>
                   <div class="theme-option" data-theme="cool-mint">
-                    <div class="theme-preview" style="background: linear-gradient(135deg, #2af598, #009efd, #56ab2f, #a8e063);"></div>
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #2af598, #009efd, #56ab2f, #a8e063);
+                      "
+                    ></div>
                     <span class="theme-name">Cool Mint</span>
                     <i class="fas fa-check theme-check"></i>
                   </div>
