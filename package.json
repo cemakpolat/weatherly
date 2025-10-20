@@ -19,7 +19,8 @@
   },
   "dependencies": {
     "bootstrap": "^5.3.3",
-    "electron-store": "^10.0.0"
+    "electron-store": "^10.0.0",
+    "leaflet": "^1.9.4"
   },
   "devDependencies": {
     "@babel/core": "^7.28.4",

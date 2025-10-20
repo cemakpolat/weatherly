@@ -167,7 +167,7 @@ export class WeatherAnimationManager {
     // Return an object with control methods
     return {
       stop: () => animation.stop(),
-      setIntensity: (newIntensity) => animation.setIntensity(newIntensity),
+      setIntensity: newIntensity => animation.setIntensity(newIntensity),
       getName: () => animation.getName(),
     };
   }

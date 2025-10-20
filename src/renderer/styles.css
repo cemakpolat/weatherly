@@ -19,56 +19,56 @@ body {
 }
 
 /* Theme: Purple Blue (default) */
-body[data-theme="purple-blue"] {
+body[data-theme='purple-blue'] {
   background: linear-gradient(270deg, #6a11cb, #2575fc, #ff7e5f, #feb47b);
   background-size: 400% 400%;
   animation: GradientBackground 15s ease infinite;
 }
 
 /* Theme: Ocean Breeze */
-body[data-theme="ocean-breeze"] {
+body[data-theme='ocean-breeze'] {
   background: linear-gradient(270deg, #2193b0, #6dd5ed, #00d2ff, #3a7bd5);
   background-size: 400% 400%;
   animation: GradientBackground 15s ease infinite;
 }
 
 /* Theme: Sunset Glow */
-body[data-theme="sunset-glow"] {
+body[data-theme='sunset-glow'] {
   background: linear-gradient(270deg, #ff6e7f, #bfe9ff, #ffa06f, #ff758c);
   background-size: 400% 400%;
   animation: GradientBackground 15s ease infinite;
 }
 
 /* Theme: Forest Green */
-body[data-theme="forest-green"] {
+body[data-theme='forest-green'] {
   background: linear-gradient(270deg, #134e5e, #71b280, #2c5f2d, #97cc04);
   background-size: 400% 400%;
   animation: GradientBackground 15s ease infinite;
 }
 
 /* Theme: Night Sky */
-body[data-theme="night-sky"] {
+body[data-theme='night-sky'] {
   background: linear-gradient(270deg, #0f2027, #203a43, #2c5364, #1a3a52);
   background-size: 400% 400%;
   animation: GradientBackground 15s ease infinite;
 }
 
 /* Theme: Aurora */
-body[data-theme="aurora"] {
+body[data-theme='aurora'] {
   background: linear-gradient(270deg, #00c6ff, #0072ff, #00d4ff, #7b68ee);
   background-size: 400% 400%;
   animation: GradientBackground 15s ease infinite;
 }
 
 /* Theme: Warm Sunset */
-body[data-theme="warm-sunset"] {
+body[data-theme='warm-sunset'] {
   background: linear-gradient(270deg, #ff512f, #dd2476, #f09819, #ff512f);
   background-size: 400% 400%;
   animation: GradientBackground 15s ease infinite;
 }
 
 /* Theme: Cool Mint */
-body[data-theme="cool-mint"] {
+body[data-theme='cool-mint'] {
   background: linear-gradient(270deg, #2af598, #009efd, #56ab2f, #a8e063);
   background-size: 400% 400%;
   animation: GradientBackground 15s ease infinite;
@@ -730,7 +730,8 @@ body[data-theme="cool-mint"] {
 }
 
 @keyframes sun-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(1);
   }
@@ -748,7 +749,8 @@ body[data-theme="cool-mint"] {
 }
 
 @keyframes sunny-float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0);
   }
   50% {
@@ -1135,15 +1137,13 @@ body[data-theme="cool-mint"] {
   font-size: 0.75rem;
 }
 
-
 /* Update weather details grid for details tab */
-.card-tab-pane[data-tab-pane="details"] .weather-details-grid {
+.card-tab-pane[data-tab-pane='details'] .weather-details-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   margin-top: 10px;
 }
-
 
 /* Masonry Layout for Cities - JavaScript controlled */
 #cities {
@@ -1201,7 +1201,6 @@ body[data-theme="cool-mint"] {
   font-size: 0.9rem;
   margin: 5px 0;
 }
-
 
 /* ========================================
    ENHANCED WEATHER ANIMATIONS
@@ -1296,7 +1295,12 @@ body[data-theme="cool-mint"] {
 }
 
 .cloud-bubble-enhanced {
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0.1) 100%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
   border-radius: 50%;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -1327,13 +1331,19 @@ body[data-theme="cool-mint"] {
   height: 300px;
   margin-left: -150px;
   margin-top: -150px;
-  background: radial-gradient(circle, rgba(255, 220, 100, 0.15) 0%, rgba(255, 240, 150, 0.05) 40%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 220, 100, 0.15) 0%,
+    rgba(255, 240, 150, 0.05) 40%,
+    transparent 70%
+  );
   animation: sun-pulse-enhanced 6s ease-in-out infinite;
   border-radius: 50%;
 }
 
 @keyframes sun-pulse-enhanced {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1) rotate(0deg);
     opacity: 0.4;
   }
@@ -1351,10 +1361,12 @@ body[data-theme="cool-mint"] {
   height: 150px;
   margin-left: -1px;
   margin-top: -75px;
-  background: linear-gradient(to bottom, 
-    rgba(255, 255, 200, 0) 0%, 
-    rgba(255, 255, 200, 0.3) 50%, 
-    rgba(255, 255, 200, 0) 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 200, 0) 0%,
+    rgba(255, 255, 200, 0.3) 50%,
+    rgba(255, 255, 200, 0) 100%
+  );
   transform-origin: center center;
   animation: light-beam-rotate 20s linear infinite;
   opacity: 0.5;
@@ -1507,7 +1519,8 @@ body[data-theme="cool-mint"] {
 
 /* Optimized sunny float */
 @keyframes sunny-float-optimized {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0);
     opacity: 0.15;
   }
@@ -1689,12 +1702,12 @@ body[data-theme="cool-mint"] {
    ======================================== */
 
 /* Make cards draggable */
-.col[draggable="true"] {
+.col[draggable='true'] {
   cursor: move;
   cursor: grab;
 }
 
-.col[draggable="true"]:active {
+.col[draggable='true']:active {
   cursor: grabbing;
 }
 
@@ -1712,16 +1725,117 @@ body[data-theme="cool-mint"] {
 }
 
 /* Drag hover effects */
-.col[draggable="true"]:not(.dragging):hover {
+.col[draggable='true']:not(.dragging):hover {
   cursor: move;
   cursor: grab;
 }
 
 /* Smooth transitions during drag */
 .col {
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .col.dragging {
   transition: none;
+}
+
+/* ========================================
+   RADAR MAP STYLES
+   ======================================== */
+
+/* Radar loading state */
+.radar-loading {
+  text-align: center;
+  padding: 30px 20px;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.radar-loading i {
+  margin-right: 8px;
+  animation: spin 1s linear infinite;
+}
+
+/* Radar content */
+.radar-content {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Radar map container */
+.radar-map-container {
+  width: 100%;
+  height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Radar controls */
+.radar-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  flex-wrap: wrap;
+}
+
+.radar-layer-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  margin: 0;
+  transition: all 0.2s ease;
+}
+
+.radar-layer-toggle:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.radar-layer-toggle input[type='checkbox'] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+/* Leaflet map customization */
+.radar-map-container .leaflet-control-attribution {
+  font-size: 9px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 2px 5px;
+}
+
+.radar-map-container .leaflet-popup-content-wrapper {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 8px;
+}
+
+.radar-map-container .leaflet-popup-tip {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .radar-map-container {
+    height: 250px;
+  }
+
+  .radar-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
 }

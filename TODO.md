@@ -105,6 +105,24 @@ This document contains prioritized feature ideas and improvements for the Weathe
 
 ---
 
+### 10. Weather Radar/Maps
+**Status:** ✅ COMPLETED
+**Description:** Interactive weather map with overlay layers
+- ✅ Integrated Leaflet library (v1.9.4)
+- ✅ Added Radar tab to city cards
+- ✅ OpenStreetMap base layer with city marker
+- ✅ Weather overlay layers (precipitation, clouds, temperature)
+- ✅ Toggle controls for each weather layer
+- ✅ Zoom and pan controls
+- ✅ Lazy loading when Radar tab is clicked
+- ✅ Responsive design with mobile support
+- ⚠️ Requires OpenWeatherMap API key for weather overlays
+
+**Dependencies:** `leaflet@1.9.4`
+**Files modified:** `renderer.js`, `index.html`, `styles.css`, `package.json`
+
+---
+
 ## 🔴 High Priority Features
 
 ---
@@ -168,23 +186,7 @@ This document contains prioritized feature ideas and improvements for the Weathe
 
 ---
 
-### 2. Weather Radar/Maps
-**Priority:** Low
-**Complexity:** High
-**Description:** Interactive weather map overlay
-- [ ] Integrate Leaflet or Mapbox
-- [ ] Radar overlay layer
-- [ ] Precipitation animation
-- [ ] Temperature heat map
-- [ ] Zoom and pan controls
-- [ ] Current location marker
-
-**Dependencies:** `leaflet` or `mapbox-gl`
-**Files to modify:** `renderer.js`, `index.html`, `styles.css`
-
----
-
-### 3. Share Weather as Image
+### 2. Share Weather as Image
 **Priority:** Low
 **Complexity:** Medium
 **Description:** Export city weather card as PNG/JPG
@@ -199,7 +201,7 @@ This document contains prioritized feature ideas and improvements for the Weathe
 
 ---
 
-### 4. System Tray Integration
+### 3. System Tray Integration
 **Priority:** Low
 **Complexity:** Medium
 **Description:** Minimize to system tray with quick view
@@ -609,11 +611,10 @@ This document contains prioritized feature ideas and improvements for the Weathe
 - Better test coverage
 
 **Medium-term (Sprint 7-12):**
-- Weather maps
-- Historical data
 - Custom refresh intervals
 - Auto-updates
 - Code refactoring
+- Search history
 
 **Long-term (Future):**
 - Multi-language support
@@ -637,6 +638,7 @@ This document contains prioritized feature ideas and improvements for the Weathe
 - ✅ Drag-and-drop city reordering
 - ✅ Historical weather data
 - ✅ Weather-based animations
+- ✅ Weather radar/maps with Leaflet
 - [ ] Set up ESLint
 - [ ] Improve test coverage to 60%
 
@@ -647,7 +649,6 @@ This document contains prioritized feature ideas and improvements for the Weathe
 - [ ] Export/Import settings
 
 ### Q3 2025
-- [ ] Weather maps
 - [ ] Auto-update system
 - [ ] Performance optimizations
 - [ ] Accessibility improvements

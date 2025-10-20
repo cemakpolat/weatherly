@@ -18,7 +18,6 @@ describe('Theme System', () => {
   let showToast;
 
   beforeEach(() => {
-
     // Reset DOM
     document.body.innerHTML = `
       <div class="theme-option" data-theme="purple-blue"></div>
@@ -31,7 +30,7 @@ describe('Theme System', () => {
     jest.clearAllMocks();
 
     // Define test versions of functions (simulating the actual renderer.js functions)
-    loadAndApplyTheme = async function() {
+    loadAndApplyTheme = async function () {
       try {
         const settings = await window.electron.readSettings();
         const theme = settings.theme || 'purple-blue';
@@ -42,7 +41,7 @@ describe('Theme System', () => {
       }
     };
 
-    applyTheme = function(themeName) {
+    applyTheme = function (themeName) {
       document.body.setAttribute('data-theme', themeName);
 
       const themeOptions = document.querySelectorAll('.theme-option');
@@ -55,7 +54,7 @@ describe('Theme System', () => {
       });
     };
 
-    saveTheme = async function(themeName) {
+    saveTheme = async function (themeName) {
       try {
         const settings = await window.electron.readSettings();
         settings.theme = themeName;
@@ -353,7 +352,7 @@ describe('Theme System', () => {
       // Redefine document.body as undefined
       Object.defineProperty(document, 'body', {
         configurable: true,
-        get: () => undefined
+        get: () => undefined,
       });
 
       expect(() => applyTheme('purple-blue')).toThrow();
@@ -362,7 +361,7 @@ describe('Theme System', () => {
       Object.defineProperty(document, 'body', {
         configurable: true,
         writable: true,
-        value: originalBody
+        value: originalBody,
       });
     });
 

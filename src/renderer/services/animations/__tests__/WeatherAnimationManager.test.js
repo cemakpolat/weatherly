@@ -422,7 +422,7 @@ describe('WeatherAnimationManager', () => {
 
       manager.startForWeatherCode(61); // Rain
       manager.startForWeatherCode(71); // Snow
-      manager.startForWeatherCode(0);  // Sunny
+      manager.startForWeatherCode(0); // Sunny
       manager.startForWeatherCode(95); // Thunderstorm
 
       expect(manager.getCurrentAnimationName()).toBe('Thunderstorm');
