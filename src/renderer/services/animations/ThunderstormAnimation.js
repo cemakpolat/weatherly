@@ -142,9 +142,9 @@ export class ThunderstormAnimation extends IWeatherAnimation {
   }
 
   #createLightning() {
-    if (!this.#lightningFlashId) return;
+    if (!this.#lightningFlashId) {return;}
     const flash = document.getElementById(this.#lightningFlashId);
-    if (!flash) return;
+    if (!flash) {return;}
 
     // Random lightning pattern
     const pattern = Math.floor(Math.random() * 3);

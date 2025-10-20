@@ -2,15 +2,15 @@
 import {
   CITIES_JSON_URL,
   GEOCODING_API_URL,
-  WEATHER_API_URL,
+  WEATHER_API_URL as _WEATHER_API_URL,
   DEFAULT_LANGUAGE,
   AUTO_REFRESH_INTERVAL,
   WEATHER_MAPPINGS,
-  SEVERE_WEATHER_CODES,
+  SEVERE_WEATHER_CODES as _SEVERE_WEATHER_CODES,
 } from './utils/constants.js';
 
 import {
-  celsiusToFahrenheit,
+  celsiusToFahrenheit as _celsiusToFahrenheit,
   formatTemperature as formatTemp,
   getCurrentHourIndex,
   formatWindDirection,
@@ -28,7 +28,7 @@ import {
   fetchWeatherData,
   fetchWeather,
   reverseGeocode,
-  getCurrentPositionViaIP,
+  getCurrentPositionViaIP as _getCurrentPositionViaIP,
   getCurrentPosition,
 } from './services/weatherApi.js';
 
@@ -633,7 +633,7 @@ function getNext6HoursForecast(times, temperatures) {
     const targetHour = targetTime.getHours();
 
     // Find the closest matching time in the forecast data
-    let forecastIndex = times.findIndex(time => {
+    const forecastIndex = times.findIndex(time => {
       const timeDate = new Date(time);
       return timeDate.getHours() === targetHour && timeDate.getDate() === targetTime.getDate();
     });
@@ -1283,7 +1283,7 @@ async function loadRadarMap(card, cityName) {
  */
 async function handleSearch() {
   const city = citySearch.value.trim();
-  if (!city || city === lastSearchTerm) return;
+  if (!city || city === lastSearchTerm) {return;}
 
   lastSearchTerm = city;
 
@@ -1344,7 +1344,7 @@ function isCityAlreadyDisplayed(city) {
  * @param {string} city - The city name.
  */
 async function addNewCityToStorage(city) {
-  let cities = getFromSessionStorage('cities') || [];
+  const cities = getFromSessionStorage('cities') || [];
   const cityExists = cities.some(c => c.name.toLowerCase() === city.toLowerCase());
 
   if (!cityExists) {
@@ -1431,7 +1431,7 @@ function debouncedSaveSettings() {
 async function saveSettings() {
   const settings = {
     isSearchBarHidden: searchBarContainer.classList.contains('d-none'),
-    temperatureUnit: temperatureUnit,
+    temperatureUnit,
     cities: Array.from(citiesContainer.children).map(card => {
       const name = card.querySelector('.card-title').textContent.split(',')[0];
       const country_code = card.querySelector('.card-title').textContent.split(',')[1].trim();
@@ -1979,7 +1979,6 @@ document.getElementById('alerts-enabled').addEventListener('change', async () =>
 
 // --- Masonry Layout Handler ---
 
-let masonryColumns = 3;
 const columnGap = 24; // 1.5rem in pixels
 const cardWidth = 350;
 
@@ -2004,7 +2003,6 @@ function applyMasonryLayout() {
     1,
     Math.floor((containerWidth + columnGap) / (cardWidth + columnGap))
   );
-  masonryColumns = numColumns;
 
   console.log(`[Masonry] Container width: ${containerWidth}px, Columns: ${numColumns}`);
 
@@ -2057,15 +2055,6 @@ function applyMasonryLayout() {
     `[Masonry] Layout complete. Container height: ${maxHeight}px, Column heights:`,
     columnHeights
   );
-}
-
-/**
- * Debounced masonry layout application
- */
-let masonryTimeout;
-function debouncedMasonry() {
-  clearTimeout(masonryTimeout);
-  masonryTimeout = setTimeout(applyMasonryLayout, 100);
 }
 
 // Apply masonry when window loads (after all content is loaded)

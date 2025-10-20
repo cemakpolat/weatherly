@@ -23,10 +23,10 @@ export class IWeatherAnimation {
 
   /**
    * Creates and starts the animation
-   * @param {HTMLElement} container - The container element
+   * @param {HTMLElement} _container - The container element
    * @returns {void}
    */
-  start(container) {
+  start(_container) {
     throw new Error('Method start() must be implemented');
   }
 
@@ -40,10 +40,10 @@ export class IWeatherAnimation {
 
   /**
    * Updates animation intensity
-   * @param {number} intensity - Animation intensity (0-1)
+   * @param {number} _intensity - Animation intensity (0-1)
    * @returns {void}
    */
-  setIntensity(intensity) {
+  setIntensity(_intensity) {
     throw new Error('Method setIntensity() must be implemented');
   }
 }
