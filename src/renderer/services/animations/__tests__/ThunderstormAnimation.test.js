@@ -195,7 +195,6 @@ describe('ThunderstormAnimation', () => {
 
     test('should not trigger lightning after stop', () => {
       const lightning = container.querySelector('.lightning-flash');
-      const initialState = lightning.style.opacity;
 
       animation.stop();
 

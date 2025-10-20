@@ -123,7 +123,7 @@ export class WeatherAnimationManager {
    */
   getAvailableAnimations() {
     const animations = [];
-    this.#weatherCodeToAnimationClass.forEach((AnimationClass, code) => {
+    this.#weatherCodeToAnimationClass.forEach(AnimationClass => {
       const instance = new AnimationClass();
       const existing = animations.find(a => a.name === instance.getName());
       if (!existing) {

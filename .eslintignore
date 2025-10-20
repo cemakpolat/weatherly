@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Test coverage
+coverage/
+
+# Config files
+.prettierrc
+jest.config.js
+jest.e2e.config.js
+
+# Minified files
+*.min.js
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Electron build resources
+*.icns
+*.png
+*.jpg
+*.jpeg
+
+# JSON data files
+src/renderer/cities.json
+
+# Test files with import issues
+src/renderer/__tests__/renderer.test.js

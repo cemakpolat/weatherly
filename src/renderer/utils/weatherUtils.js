@@ -76,10 +76,18 @@ export function formatWindSpeed(kmh, temperatureUnit = 'celsius') {
  * @returns {object} - UV recommendation with text and color class.
  */
 export function getUVRecommendation(uvIndex) {
-  if (uvIndex <= 2) return { text: 'Low', class: 'uv-low' };
-  if (uvIndex <= 5) return { text: 'Moderate', class: 'uv-moderate' };
-  if (uvIndex <= 7) return { text: 'High', class: 'uv-high' };
-  if (uvIndex <= 10) return { text: 'Very High', class: 'uv-very-high' };
+  if (uvIndex <= 2) {
+    return { text: 'Low', class: 'uv-low' };
+  }
+  if (uvIndex <= 5) {
+    return { text: 'Moderate', class: 'uv-moderate' };
+  }
+  if (uvIndex <= 7) {
+    return { text: 'High', class: 'uv-high' };
+  }
+  if (uvIndex <= 10) {
+    return { text: 'Very High', class: 'uv-very-high' };
+  }
   return { text: 'Extreme', class: 'uv-extreme' };
 }
 

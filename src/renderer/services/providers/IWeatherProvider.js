@@ -62,39 +62,39 @@ export class IWeatherProvider {
 
   /**
    * Searches for cities by name and returns geocoding results
-   * @param {string} cityName - The city name to search for
+   * @param {string} _cityName - The city name to search for
    * @returns {Promise<GeocodingResult|null>} Geocoding result or null
    */
-  async geocodeCity(cityName) {
+  async geocodeCity(_cityName) {
     throw new Error('Method geocodeCity() must be implemented');
   }
 
   /**
    * Fetches weather data for given coordinates
-   * @param {number} latitude - Latitude coordinate
-   * @param {number} longitude - Longitude coordinate
+   * @param {number} _latitude - Latitude coordinate
+   * @param {number} _longitude - Longitude coordinate
    * @returns {Promise<WeatherData|null>} Weather data or null
    */
-  async getWeatherByCoordinates(latitude, longitude) {
+  async getWeatherByCoordinates(_latitude, _longitude) {
     throw new Error('Method getWeatherByCoordinates() must be implemented');
   }
 
   /**
    * Fetches complete weather data for a city by name
-   * @param {string} cityName - The city name
+   * @param {string} _cityName - The city name
    * @returns {Promise<CityWeatherResult|null>} City weather data or null
    */
-  async getWeatherByCity(cityName) {
+  async getWeatherByCity(_cityName) {
     throw new Error('Method getWeatherByCity() must be implemented');
   }
 
   /**
    * Reverse geocodes coordinates to get city information
-   * @param {number} latitude - Latitude coordinate
-   * @param {number} longitude - Longitude coordinate
+   * @param {number} _latitude - Latitude coordinate
+   * @param {number} _longitude - Longitude coordinate
    * @returns {Promise<{name: string, country_code: string}|null>} City info or null
    */
-  async reverseGeocode(latitude, longitude) {
+  async reverseGeocode(_latitude, _longitude) {
     throw new Error('Method reverseGeocode() must be implemented');
   }
 }
