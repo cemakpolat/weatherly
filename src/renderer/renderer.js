@@ -354,11 +354,32 @@ function createCityCard(cityData) {
   card.innerHTML = `
     <div class="card ${hasAlerts ? 'has-weather-alert' : ''} ${isCurrentLocation ? 'is-current-location' : ''}">
       <div class="card-body text-center position-relative">
+        <!-- Row Header for List View -->
+        <div class="row-header">
+          <div class="row-header-badges">
+            ${alertBadge}
+            ${locationBadge}
+          </div>
+          <span class="row-header-city">${name}, ${country_code}</span>
+          <div class="row-header-weather">
+            ${getIcon(weatherCode)}
+            <span class="card-text">${getDescription(weatherCode)}</span>
+          </div>
+          <span class="row-header-temp">${formatTemperature(currentTemp)}</span>
+          <span class="row-header-humidity"><i class="fas fa-droplet"></i> ${humidity}%</span>
+          <div class="row-header-actions">
+            <button class="btn btn-sm refresh-button" aria-label="Refresh weather">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+            <button class="btn btn-sm remove-button" aria-label="Remove city">
+              <i class="fas fa-x"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Original Card Content (for Grid View) -->
         ${alertBadge}
         ${locationBadge}
-        <button class="btn btn-sm refresh-button" aria-label="Refresh weather">
-          <i class="fas fa-sync-alt"></i>
-        </button>
         <button class="btn btn-sm position-absolute top-0 end-0 m-2 remove-button" aria-label="Remove city">
           <i class="fas fa-x"></i>
         </button>
@@ -470,11 +491,13 @@ function createCityCard(cityData) {
     </div>
   `;
 
-  // Add event listener to the refresh button
-  const refreshButton = card.querySelector('.refresh-button');
-  refreshButton.addEventListener('click', async () => {
-    await refreshCityWeather(card, name);
-  });
+  // Add event listener to the refresh button (only in row-header for list view)
+  const refreshButton = card.querySelector('.row-header .refresh-button');
+  if (refreshButton) {
+    refreshButton.addEventListener('click', async () => {
+      await refreshCityWeather(card, name);
+    });
+  }
 
   // Add event listener to the remove button
   const removeButton = card.querySelector('.remove-button');
@@ -509,6 +532,25 @@ function createCityCard(cityData) {
       toggleCardTab(card, tab);
     });
   });
+
+  // Add event listener to row header for accordion functionality
+  const rowHeader = card.querySelector('.row-header');
+  if (rowHeader) {
+    rowHeader.addEventListener('click', e => {
+      // Don't toggle if clicking on action buttons
+      if (e.target.closest('.row-header-actions')) {
+        return;
+      }
+
+      // Toggle expanded class on the card element
+      card.classList.toggle('expanded');
+
+      // Reapply masonry layout after expansion change
+      setTimeout(() => {
+        applyMasonryLayout();
+      }, 300);
+    });
+  }
 
   // Add drag-and-drop event listeners
   setupDragAndDrop(card);
@@ -1434,6 +1476,7 @@ async function saveSettings() {
   const settings = {
     isSearchBarHidden: searchBarContainer.classList.contains('d-none'),
     temperatureUnit,
+    isCompactView: document.body.classList.contains('compact-view'),
     cities: Array.from(citiesContainer.children).map(card => {
       const name = card.querySelector('.card-title').textContent.split(',')[0];
       const country_code = card.querySelector('.card-title').textContent.split(',')[1].trim();
@@ -1465,6 +1508,18 @@ async function loadSettings() {
     if (settings.temperatureUnit) {
       temperatureUnit = settings.temperatureUnit;
       updateTemperatureUnitButton();
+    }
+
+    // Restore compact view mode
+    if (settings.isCompactView) {
+      const body = document.body;
+      const compactViewBtn = document.getElementById('compact-view-toggle');
+
+      body.classList.add('compact-view');
+      compactViewBtn.classList.add('active');
+      compactViewBtn.querySelector('i').classList.remove('fa-list');
+      compactViewBtn.querySelector('i').classList.add('fa-th-large');
+      compactViewBtn.title = 'Switch to Grid View';
     }
 
     // Load cities one by one to avoid overwhelming the API
@@ -1519,6 +1574,38 @@ function toggleTemperatureUnit() {
   temperatureUnit = temperatureUnit === 'celsius' ? 'fahrenheit' : 'celsius';
   updateTemperatureUnitButton();
   updateAllTemperatureDisplays();
+  debouncedSaveSettings();
+}
+
+// --- Compact View Mode ---
+
+/**
+ * Toggles compact view mode.
+ */
+function toggleCompactView() {
+  const body = document.body;
+  const compactViewBtn = document.getElementById('compact-view-toggle');
+
+  body.classList.toggle('compact-view');
+
+  // Update button visual state
+  if (body.classList.contains('compact-view')) {
+    compactViewBtn.classList.add('active');
+    compactViewBtn.querySelector('i').classList.remove('fa-list');
+    compactViewBtn.querySelector('i').classList.add('fa-th-large');
+    compactViewBtn.title = 'Switch to Grid View';
+  } else {
+    compactViewBtn.classList.remove('active');
+    compactViewBtn.querySelector('i').classList.remove('fa-th-large');
+    compactViewBtn.querySelector('i').classList.add('fa-list');
+    compactViewBtn.title = 'Switch to List View';
+  }
+
+  // Reapply masonry layout after view change
+  setTimeout(() => {
+    applyMasonryLayout();
+  }, 50);
+
   debouncedSaveSettings();
 }
 
@@ -1661,17 +1748,33 @@ async function refreshAllCities() {
 /**
  * Starts the auto-refresh interval.
  */
-function startAutoRefresh() {
+async function startAutoRefresh() {
   // Clear existing interval if any
   if (autoRefreshInterval) {
     clearInterval(autoRefreshInterval);
   }
 
-  // Set up new interval
-  autoRefreshInterval = setInterval(() => {
-    console.log('Auto-refreshing weather data...');
-    refreshAllCities();
-  }, AUTO_REFRESH_INTERVAL);
+  try {
+    // Get saved interval from settings, or use default
+    const settings = await window.electron.readSettings();
+    const intervalMinutes = settings.autoRefreshInterval || 5; // Default to 5 minutes
+    const intervalMs = intervalMinutes * 60 * 1000;
+
+    // Set up new interval
+    autoRefreshInterval = setInterval(() => {
+      console.log('Auto-refreshing weather data...');
+      refreshAllCities();
+    }, intervalMs);
+
+    console.log(`Auto-refresh started with interval: ${intervalMinutes} minutes`);
+  } catch (error) {
+    console.error('Error starting auto-refresh:', error);
+    // Fallback to default interval if settings can't be loaded
+    autoRefreshInterval = setInterval(() => {
+      console.log('Auto-refreshing weather data...');
+      refreshAllCities();
+    }, AUTO_REFRESH_INTERVAL);
+  }
 }
 
 /**
@@ -1752,6 +1855,11 @@ document.getElementById('maximize-btn').addEventListener('click', () => {
 
 document.getElementById('temp-unit-toggle').addEventListener('click', () => {
   toggleTemperatureUnit();
+});
+
+// Compact view toggle
+document.getElementById('compact-view-toggle').addEventListener('click', () => {
+  toggleCompactView();
 });
 
 searchToggleBtn.addEventListener('click', () => {
@@ -1867,6 +1975,15 @@ async function loadSettingsUI() {
     document.getElementById('alert-extreme-temp').checked = alertPrefs.extremeTemperature;
     document.getElementById('alert-high-precip').checked = alertPrefs.highPrecipitation;
 
+    // Load auto-refresh interval setting
+    const autoRefreshMinutes = settings.autoRefreshInterval || 5; // Default to 5 minutes
+    const slider = document.getElementById('auto-refresh-interval');
+    const valueDisplay = document.getElementById('refresh-interval-value');
+    if (slider && valueDisplay) {
+      slider.value = autoRefreshMinutes;
+      valueDisplay.textContent = `${autoRefreshMinutes} min`;
+    }
+
     // Load theme and apply active state
     const theme = settings.theme || 'purple-blue';
     applyTheme(theme);
@@ -1946,6 +2063,42 @@ async function saveAlertPreferences() {
   }
 }
 
+/**
+ * Saves auto-refresh interval preference to settings and restarts the refresh timer.
+ */
+async function saveAutoRefreshInterval() {
+  const settings = await window.electron.readSettings();
+  const intervalMinutes = parseInt(document.getElementById('auto-refresh-interval').value);
+
+  settings.autoRefreshInterval = intervalMinutes;
+
+  try {
+    await window.electron.writeSettings(settings);
+    console.log('Auto-refresh interval saved:', intervalMinutes, 'minutes');
+
+    // Restart auto-refresh with new interval
+    if (autoRefreshInterval) {
+      clearInterval(autoRefreshInterval);
+    }
+
+    // Convert minutes to milliseconds
+    const intervalMs = intervalMinutes * 60 * 1000;
+    autoRefreshInterval = setInterval(() => {
+      console.log('Auto-refreshing weather data...');
+      refreshAllCities();
+    }, intervalMs);
+
+    showToast(
+      `Auto-refresh set to ${intervalMinutes} minute${intervalMinutes > 1 ? 's' : ''}`,
+      'success',
+      2000
+    );
+  } catch (error) {
+    console.error('Error saving auto-refresh interval:', error);
+    showToast('Failed to save auto-refresh interval', 'error');
+  }
+}
+
 // Settings page event listeners
 settingsBtn.addEventListener('click', () => {
   showSettingsPage();
@@ -1979,10 +2132,27 @@ document.getElementById('alerts-enabled').addEventListener('change', async () =>
   });
 });
 
+// Auto-refresh interval slider
+const refreshIntervalSlider = document.getElementById('auto-refresh-interval');
+const refreshIntervalValue = document.getElementById('refresh-interval-value');
+
+if (refreshIntervalSlider && refreshIntervalValue) {
+  // Update display value as user drags slider
+  refreshIntervalSlider.addEventListener('input', () => {
+    const minutes = refreshIntervalSlider.value;
+    refreshIntervalValue.textContent = `${minutes} min`;
+  });
+
+  // Save and apply setting when user releases slider
+  refreshIntervalSlider.addEventListener('change', async () => {
+    await saveAutoRefreshInterval();
+  });
+}
+
 // --- Masonry Layout Handler ---
 
-const columnGap = 24; // 1.5rem in pixels
-const cardWidth = 350;
+const columnGap = 12; // Reduced gap for better space usage
+const cardWidth = 320; // Smaller cards to fit more
 
 /**
  * Applies masonry layout to the cities grid

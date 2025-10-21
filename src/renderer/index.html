@@ -18,6 +18,11 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -27,6 +32,9 @@
       <div class="controls">
         <button id="settings-btn" title="Settings"><i class="fas fa-cog"></i></button>
         <button id="temp-unit-toggle" title="Toggle °C/°F">°C</button>
+        <button id="compact-view-toggle" title="Switch to List View">
+          <i class="fas fa-list"></i>
+        </button>
         <button id="search-toggle-btn" title="Toggle Search"><i class="fas fa-search"></i></button>
         <button id="minimize-btn" title="Minimize"><i class="fas fa-window-minimize"></i></button>
         <button id="maximize-btn" title="Maximize"><i class="fas fa-window-maximize"></i></button>
@@ -211,6 +219,48 @@
                         />
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Auto-Refresh Settings Section -->
+              <div class="settings-section mt-4">
+                <h4 class="settings-section-title">
+                  <i class="fas fa-arrows-rotate me-2"></i>
+                  Auto-Refresh
+                </h4>
+                <p class="text-muted small mb-3">
+                  Configure how often weather data is automatically refreshed
+                </p>
+
+                <div class="settings-option mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                      <label for="auto-refresh-interval" class="form-label mb-0"
+                        >Refresh Interval</label
+                      >
+                      <div class="small text-muted">
+                        How often to update weather data (in minutes)
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-center gap-3">
+                    <input
+                      type="range"
+                      class="form-range flex-grow-1"
+                      id="auto-refresh-interval"
+                      min="1"
+                      max="60"
+                      value="5"
+                      step="1"
+                    />
+                    <span id="refresh-interval-value" class="fw-bold" style="min-width: 60px"
+                      >5 min</span
+                    >
+                  </div>
+                  <div class="text-center mt-2 small text-muted">
+                    <span>1 min</span>
+                    <span class="float-end">60 min</span>
                   </div>
                 </div>
               </div>

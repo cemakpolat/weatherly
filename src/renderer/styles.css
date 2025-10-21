@@ -103,7 +103,7 @@ body[data-theme='cool-mint'] {
 }
 
 .card-body {
-  padding: 1.5rem 1.5rem !important; /* Better balanced padding */
+  padding: 1rem 1rem !important; /* Compact padding */
 }
 
 .card:hover {
@@ -369,8 +369,8 @@ body[data-theme='cool-mint'] {
 .forecast-toggle-container {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .forecast-toggle-btn {
@@ -538,9 +538,9 @@ body[data-theme='cool-mint'] {
 .weather-details-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin: 15px 0;
-  padding: 15px;
+  gap: 8px;
+  margin: 10px 0;
+  padding: 10px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
 }
@@ -549,10 +549,10 @@ body[data-theme='cool-mint'] {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px;
+  gap: 3px;
+  padding: 6px;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  border-radius: 6px;
   transition: background 0.2s ease;
 }
 
@@ -1023,23 +1023,33 @@ body[data-theme='cool-mint'] {
 /* Card Tabs */
 .card-tabs {
   display: flex;
-  gap: 8px;
-  margin: 15px 0 10px 0;
+  gap: 4px;
+  margin: 10px 0 8px 0;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.card-tabs::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 .card-tab-btn {
   flex: 1;
-  padding: 8px 12px;
+  min-width: fit-content;
+  padding: 6px 8px;
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
+  white-space: nowrap;
 }
 
 .card-tab-btn:hover {
@@ -1053,7 +1063,7 @@ body[data-theme='cool-mint'] {
 }
 
 .card-tab-content {
-  margin-top: 15px;
+  margin-top: 10px;
 }
 
 .card-tab-pane {
@@ -1162,7 +1172,7 @@ body[data-theme='cool-mint'] {
 /* Make temperature display more compact */
 .current-temp {
   font-size: 1rem !important;
-  margin: 8px 0 !important;
+  margin: 5px 0 !important;
 }
 
 .current-temp .temp-value {
@@ -1186,14 +1196,14 @@ body[data-theme='cool-mint'] {
 
 /* Make weather icon slightly smaller */
 .weather-icon {
-  font-size: 3rem !important;
-  margin: 10px 0 !important;
+  font-size: 2.5rem !important;
+  margin: 5px 0 !important;
 }
 
 /* Compact card title */
 .card-title {
-  font-size: 1.2rem !important;
-  margin-bottom: 8px !important;
+  font-size: 1.1rem !important;
+  margin-bottom: 5px !important;
 }
 
 /* Compact weather description */
@@ -1837,5 +1847,320 @@ body[data-theme='cool-mint'] {
   .radar-controls {
     flex-direction: column;
     gap: 8px;
+  }
+}
+
+/* ========================================
+   ROW/LIST VIEW MODE (formerly Compact View)
+   ======================================== */
+
+/* View toggle button */
+#compact-view-toggle {
+  transition: all 0.3s ease;
+}
+
+#compact-view-toggle.active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Hide row header in grid/card view (default view) */
+body:not(.compact-view) .row-header {
+  display: none !important;
+}
+
+/* Hide the extra refresh button that's not in row-header in grid view */
+body:not(.compact-view) .card-body > .refresh-button:not(.row-header .refresh-button) {
+  /* This will remain visible - it's the one positioned at top-right */
+}
+
+/* Hide the extra badges that are not in row-header in grid view */
+body:not(.compact-view) .card-body > .weather-alert-badge {
+  /* This will remain visible - positioned at top-left */
+}
+
+body:not(.compact-view) .card-body > .current-location-badge {
+  /* This will remain visible */
+}
+
+/* Row view mode - applied to body */
+body.compact-view #cities {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 20px;
+  height: auto !important;
+}
+
+body.compact-view .col {
+  position: relative !important;
+  width: 100% !important;
+  left: 0 !important;
+  top: 0 !important;
+  opacity: 1 !important;
+  margin-bottom: 0 !important;
+  transition: none !important;
+}
+
+body.compact-view .card {
+  border-radius: 10px;
+  margin-bottom: 0;
+  transition: all 0.3s ease;
+}
+
+body.compact-view .card:hover {
+  transform: none;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Row header - collapsed state */
+body.compact-view .card-body {
+  padding: 0 !important;
+}
+
+body.compact-view .col:not(.expanded) .card-body > *:not(.row-header) {
+  display: none;
+}
+
+/* Row header styling */
+body.compact-view .row-header {
+  display: grid;
+  grid-template-columns: auto 60px 1fr 120px 100px 40px 40px;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  user-select: none;
+}
+
+body.compact-view .row-header:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.compact-view .row-header-badges {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+body.compact-view .row-header .weather-alert-badge,
+body.compact-view .row-header .current-location-badge {
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  margin: 0;
+}
+
+body.compact-view .row-header-city {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+body.compact-view .row-header-weather {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+body.compact-view .row-header-weather .weather-icon {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+body.compact-view .row-header-weather .card-text {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+body.compact-view .row-header-temp {
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+body.compact-view .row-header-humidity {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  text-align: right;
+}
+
+body.compact-view .row-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+body.compact-view .row-header-expand {
+  color: white;
+  font-size: 1rem;
+  transition: transform 0.3s ease;
+}
+
+body.compact-view .col.expanded .row-header-expand {
+  transform: rotate(180deg);
+}
+
+/* Row expanded state */
+body.compact-view .col.expanded .card-body > * {
+  display: block;
+}
+
+body.compact-view .col.expanded .row-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 15px;
+}
+
+body.compact-view .col.expanded .card-body {
+  padding: 0 !important;
+}
+
+body.compact-view .col.expanded .card-tabs,
+body.compact-view .col.expanded .card-tab-content {
+  padding: 0 20px 15px 20px;
+}
+
+body.compact-view .col.expanded .card-title,
+body.compact-view .col.expanded .weather-icon,
+body.compact-view .col.expanded .current-temp,
+body.compact-view .col.expanded > .card-body > .card-text {
+  display: none;
+}
+
+/* Row view - hide default card elements */
+body.compact-view .card-title {
+  display: none;
+}
+
+body.compact-view .weather-icon:not(.row-header .weather-icon) {
+  display: none;
+}
+
+body.compact-view .current-temp {
+  display: none;
+}
+
+body.compact-view .card-body > .card-text:not(.row-header .card-text) {
+  display: none;
+}
+
+/* Row view - hide standalone badges and buttons (not in row-header) */
+body.compact-view .card-body > .weather-alert-badge {
+  display: none !important;
+}
+
+body.compact-view .card-body > .current-location-badge {
+  display: none !important;
+}
+
+body.compact-view .card-body > .remove-button {
+  display: none !important;
+}
+
+/* Row view - buttons positioning */
+/* Hide refresh button in list view */
+body.compact-view .refresh-button {
+  display: none !important;
+}
+
+body.compact-view .remove-button {
+  position: relative;
+  top: 0;
+  right: 0;
+  margin: 0;
+  opacity: 0;
+  width: 28px;
+  height: 28px;
+  transition: opacity 0.3s ease;
+}
+
+body.compact-view .row-header:hover .remove-button {
+  opacity: 0.7;
+}
+
+body.compact-view .remove-button:hover {
+  opacity: 1 !important;
+}
+
+body.compact-view .remove-button i {
+  font-size: 11px;
+}
+
+/* Row view - badges in header */
+body.compact-view .weather-alert-badge {
+  position: relative;
+  animation: none;
+}
+
+body.compact-view .current-location-badge {
+  position: relative;
+}
+
+/* Row view - tabs and content */
+body.compact-view .card-tabs {
+  margin: 0 0 8px 0;
+}
+
+body.compact-view .card-tab-btn {
+  font-size: 0.7rem;
+  padding: 5px 6px;
+}
+
+/* Row view - forecast items */
+body.compact-view .daily-forecast-item,
+body.compact-view .daily-forecast-item-compact {
+  padding: 6px 10px;
+}
+
+body.compact-view .history-day-item {
+  padding: 6px 10px;
+}
+
+/* Row view - charts and radar */
+body.compact-view .radar-map-container {
+  height: 300px;
+}
+
+body.compact-view .chart-content canvas {
+  max-width: 100%;
+}
+
+/* Animation for expansion */
+@keyframes expandRow {
+  from {
+    max-height: 60px;
+    opacity: 0.5;
+  }
+  to {
+    max-height: 2000px;
+    opacity: 1;
+  }
+}
+
+body.compact-view .col.expanded .card {
+  animation: expandRow 0.3s ease-out;
+}
+
+/* Responsive row view */
+@media (max-width: 768px) {
+  body.compact-view .row-header {
+    grid-template-columns: auto 50px 1fr 100px 80px 35px 35px;
+    gap: 10px;
+    padding: 10px 15px;
+  }
+
+  body.compact-view .row-header-city {
+    font-size: 1rem;
+  }
+
+  body.compact-view .row-header-weather .weather-icon {
+    font-size: 1.3rem;
+  }
+
+  body.compact-view .row-header-temp {
+    font-size: 1rem;
   }
 }
