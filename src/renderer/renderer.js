@@ -2088,7 +2088,11 @@ async function saveAutoRefreshInterval() {
       refreshAllCities();
     }, intervalMs);
 
-    showToast(`Auto-refresh set to ${intervalMinutes} minute${intervalMinutes > 1 ? 's' : ''}`, 'success', 2000);
+    showToast(
+      `Auto-refresh set to ${intervalMinutes} minute${intervalMinutes > 1 ? 's' : ''}`,
+      'success',
+      2000
+    );
   } catch (error) {
     console.error('Error saving auto-refresh interval:', error);
     showToast('Failed to save auto-refresh interval', 'error');
