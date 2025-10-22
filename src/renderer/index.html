@@ -1,50 +1,384 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Weather in World Cities</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <!-- Custom Title Bar -->
-  <div id="custom-title-bar">
-    <div class="title">Weatherly</div>
-    <div class="controls">
-      <button id="search-toggle-btn"><i class="fas fa-search"></i></button>
-      <button id="minimize-btn"><i class="fas fa-window-minimize"></i></button>
-      <button id="close-btn"><i class="fas fa-times"></i></button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather in World Cities</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Custom Title Bar -->
+    <div id="custom-title-bar">
+      <div class="title">Weatherly</div>
+      <div class="controls">
+        <button id="settings-btn" title="Settings"><i class="fas fa-cog"></i></button>
+        <button id="temp-unit-toggle" title="Toggle °C/°F">°C</button>
+        <button id="compact-view-toggle" title="Switch to List View">
+          <i class="fas fa-list"></i>
+        </button>
+        <button id="search-toggle-btn" title="Toggle Search"><i class="fas fa-search"></i></button>
+        <button id="minimize-btn" title="Minimize"><i class="fas fa-window-minimize"></i></button>
+        <button id="maximize-btn" title="Maximize"><i class="fas fa-window-maximize"></i></button>
+        <button id="close-btn" title="Close"><i class="fas fa-times"></i></button>
+      </div>
     </div>
-  </div>
 
-  <!-- Search Bar (initially hidden) -->
-  <div class="container my-5">
-    <div id="search-bar-container">
-      <div class="row justify-content-center mb-4">
-        <div class="col-md-12 position-relative">
-          <div class="input-group">
-            <input type="text" id="citySearch" class="form-control form-control-lg" placeholder="Enter a city name">
-            <button id="searchButton" class="btn btn-primary btn-lg">
-              <i class="fas fa-search"></i> 
-            </button>
+    <!-- Search Bar (initially hidden) -->
+    <div class="container my-5">
+      <div id="search-bar-container">
+        <div class="row justify-content-center mb-4">
+          <div class="col-md-12 position-relative">
+            <div class="input-group">
+              <input
+                type="text"
+                id="citySearch"
+                class="form-control form-control-lg"
+                placeholder="Enter a city name"
+              />
+              <button
+                id="geolocateButton"
+                class="btn btn-success btn-lg"
+                title="Detect my location"
+              >
+                <i class="fas fa-location-crosshairs"></i>
+              </button>
+              <button id="searchButton" class="btn btn-primary btn-lg">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+            <!-- Autocomplete Dropdown -->
+            <div id="autocompleteDropdown" class="dropdown-menu w-100"></div>
           </div>
-          <!-- Autocomplete Dropdown -->
-          <div id="autocompleteDropdown" class="dropdown-menu w-100"></div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- City Cards -->
-  <div class="container my-5">
-    <div id="cities" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-      <!-- City cards will be dynamically added here -->
+    <!-- Main Page Container -->
+    <div id="main-page">
+      <!-- City Cards -->
+      <div class="container my-5">
+        <div id="cities">
+          <!-- City cards will be dynamically added here -->
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- Load renderer.js with defer -->
-  <script src="renderer.js" defer></script>
-</body>
+    <!-- Settings Page (initially hidden) -->
+    <div id="settings-page" class="d-none">
+      <div class="container my-5">
+        <div class="row justify-content-center">
+          <div class="col-md-8 col-lg-6">
+            <div class="settings-card p-4">
+              <div class="d-flex align-items-center mb-4">
+                <button
+                  id="back-to-main-btn"
+                  class="btn btn-link text-white p-0 me-3"
+                  title="Back to main page"
+                >
+                  <i class="fas fa-arrow-left fa-2x"></i>
+                </button>
+                <h2 class="mb-0">Settings</h2>
+              </div>
+
+              <!-- Animation Settings Section -->
+              <div class="settings-section">
+                <h4 class="settings-section-title">
+                  <i class="fas fa-wand-magic-sparkles me-2"></i>
+                  Weather Animations
+                </h4>
+                <p class="text-muted small mb-3">
+                  Enable animated weather effects for individual cities. Animations will appear
+                  inside city cards based on current weather conditions.
+                </p>
+
+                <div class="settings-option mb-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <label for="global-animations-toggle" class="form-label mb-0"
+                        >Enable Weather Animations</label
+                      >
+                      <div class="small text-muted">Turn on/off animations for all cities</div>
+                    </div>
+                    <div class="form-check form-switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="global-animations-toggle"
+                        checked
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Weather Alerts Section -->
+              <div class="settings-section mt-4">
+                <h4 class="settings-section-title">
+                  <i class="fas fa-triangle-exclamation me-2"></i>
+                  Weather Alerts
+                </h4>
+
+                <div class="settings-option mb-2">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <label for="alerts-enabled" class="form-label mb-0"
+                      >Enable Weather Alerts</label
+                    >
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="alerts-enabled" checked />
+                    </div>
+                  </div>
+                </div>
+
+                <div id="alert-types" class="ms-3 mt-2">
+                  <div class="settings-option-small mb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <label for="alert-thunderstorm" class="form-label mb-0 small"
+                        >Thunderstorms</label
+                      >
+                      <div class="form-check form-switch">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="alert-thunderstorm"
+                          checked
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="settings-option-small mb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <label for="alert-heavy-rain" class="form-label mb-0 small">Heavy Rain</label>
+                      <div class="form-check form-switch">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="alert-heavy-rain"
+                          checked
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="settings-option-small mb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <label for="alert-heavy-snow" class="form-label mb-0 small">Heavy Snow</label>
+                      <div class="form-check form-switch">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="alert-heavy-snow"
+                          checked
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="settings-option-small mb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <label for="alert-extreme-temp" class="form-label mb-0 small"
+                        >Extreme Temperature</label
+                      >
+                      <div class="form-check form-switch">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="alert-extreme-temp"
+                          checked
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="settings-option-small mb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <label for="alert-high-precip" class="form-label mb-0 small"
+                        >High Precipitation</label
+                      >
+                      <div class="form-check form-switch">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="alert-high-precip"
+                          checked
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Auto-Refresh Settings Section -->
+              <div class="settings-section mt-4">
+                <h4 class="settings-section-title">
+                  <i class="fas fa-arrows-rotate me-2"></i>
+                  Auto-Refresh
+                </h4>
+                <p class="text-muted small mb-3">
+                  Configure how often weather data is automatically refreshed
+                </p>
+
+                <div class="settings-option mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                      <label for="auto-refresh-interval" class="form-label mb-0"
+                        >Refresh Interval</label
+                      >
+                      <div class="small text-muted">
+                        How often to update weather data (in minutes)
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-center gap-3">
+                    <input
+                      type="range"
+                      class="form-range flex-grow-1"
+                      id="auto-refresh-interval"
+                      min="1"
+                      max="60"
+                      value="5"
+                      step="1"
+                    />
+                    <span id="refresh-interval-value" class="fw-bold" style="min-width: 60px"
+                      >5 min</span
+                    >
+                  </div>
+                  <div class="text-center mt-2 small text-muted">
+                    <span>1 min</span>
+                    <span class="float-end">60 min</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Theme Settings Section -->
+              <div class="settings-section mt-4">
+                <h4 class="settings-section-title">
+                  <i class="fas fa-palette me-2"></i>
+                  Background Theme
+                </h4>
+                <p class="text-muted small mb-3">Choose a background theme for the app</p>
+
+                <div class="theme-grid">
+                  <div class="theme-option" data-theme="purple-blue">
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #6a11cb, #2575fc, #ff7e5f, #feb47b);
+                      "
+                    ></div>
+                    <span class="theme-name">Purple Blue</span>
+                    <i class="fas fa-check theme-check"></i>
+                  </div>
+                  <div class="theme-option" data-theme="ocean-breeze">
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #2193b0, #6dd5ed, #00d2ff, #3a7bd5);
+                      "
+                    ></div>
+                    <span class="theme-name">Ocean Breeze</span>
+                    <i class="fas fa-check theme-check"></i>
+                  </div>
+                  <div class="theme-option" data-theme="sunset-glow">
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #ff6e7f, #bfe9ff, #ffa06f, #ff758c);
+                      "
+                    ></div>
+                    <span class="theme-name">Sunset Glow</span>
+                    <i class="fas fa-check theme-check"></i>
+                  </div>
+                  <div class="theme-option" data-theme="forest-green">
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #134e5e, #71b280, #2c5f2d, #97cc04);
+                      "
+                    ></div>
+                    <span class="theme-name">Forest Green</span>
+                    <i class="fas fa-check theme-check"></i>
+                  </div>
+                  <div class="theme-option" data-theme="night-sky">
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364, #1a3a52);
+                      "
+                    ></div>
+                    <span class="theme-name">Night Sky</span>
+                    <i class="fas fa-check theme-check"></i>
+                  </div>
+                  <div class="theme-option" data-theme="aurora">
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #00c6ff, #0072ff, #00d4ff, #7b68ee);
+                      "
+                    ></div>
+                    <span class="theme-name">Aurora</span>
+                    <i class="fas fa-check theme-check"></i>
+                  </div>
+                  <div class="theme-option" data-theme="warm-sunset">
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #ff512f, #dd2476, #f09819, #ff512f);
+                      "
+                    ></div>
+                    <span class="theme-name">Warm Sunset</span>
+                    <i class="fas fa-check theme-check"></i>
+                  </div>
+                  <div class="theme-option" data-theme="cool-mint">
+                    <div
+                      class="theme-preview"
+                      style="
+                        background: linear-gradient(135deg, #2af598, #009efd, #56ab2f, #a8e063);
+                      "
+                    ></div>
+                    <span class="theme-name">Cool Mint</span>
+                    <i class="fas fa-check theme-check"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- About Section -->
+              <div class="settings-section mt-4">
+                <h4 class="settings-section-title">
+                  <i class="fas fa-info-circle me-2"></i>
+                  About
+                </h4>
+                <p class="small mb-1"><strong>Weatherly</strong> - Weather in World Cities</p>
+                <p class="small text-muted mb-0">Version 1.0.0</p>
+                <p class="small text-muted">Built with Electron & Open-Meteo API</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container for notifications -->
+    <div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+      <!-- Toast messages will be dynamically added here -->
+    </div>
+
+    <!-- Load renderer.js as ES6 module -->
+    <script type="module" src="renderer.js"></script>
+  </body>
 </html>

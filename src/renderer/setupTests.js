@@ -1,5 +1,9 @@
-
 import '@testing-library/jest-dom'; // Import jest-dom for better assertions
+import { TextEncoder, TextDecoder } from 'util';
+
+// Polyfill TextEncoder and TextDecoder for jsdom
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
 
 // Mock Electron's ipcRenderer
 jest.mock('electron', () => {
@@ -7,12 +11,11 @@ jest.mock('electron', () => {
     ipcRenderer: {
       send: jest.fn(),
       on: jest.fn(), // Mock the 'on' method
-      removeListener: jest.fn() // Mock the 'removeListener' method
-
+      removeListener: jest.fn(), // Mock the 'removeListener' method
     },
     contextBridge: {
-      exposeInMainWorld: jest.fn()
-    }
+      exposeInMainWorld: jest.fn(),
+    },
   };
 });
 
@@ -29,11 +32,11 @@ const sessionStorageMock = (() => {
   let store = {};
 
   return {
-    getItem: (key) => store[key] || null,
+    getItem: key => store[key] || null,
     setItem: (key, value) => {
       store[key] = String(value);
     },
-    removeItem: (key) => {
+    removeItem: key => {
       delete store[key];
     },
     clear: () => {

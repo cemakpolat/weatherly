@@ -26,10 +26,22 @@ jobs:
             cache: 'npm'
 
         - name: Install dependencies
-          run: npm install
+          run: npm ci
 
-        # - name: Run tests # TODO: not resolved jet!
-        #   run: npm test
+        - name: Check code formatting
+          run: npm run format:check
+
+        - name: Run linter
+          run: npm run lint || echo "ESLint not configured yet - skipping"
+          continue-on-error: true
+
+        - name: Security audit
+          run: npm audit --audit-level=moderate
+          continue-on-error: true
+
+        - name: Run tests
+          run: npm test
+          continue-on-error: true
 
         - name: Run build
           env:

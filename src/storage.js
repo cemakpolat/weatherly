@@ -9,7 +9,16 @@ const settingsFilePath = path.join(userDataPath, 'settings.json');
 // Default settings
 const defaultSettings = {
   isSearchBarHidden: false,
+  temperatureUnit: 'celsius',
   cities: [],
+  weatherAlerts: {
+    enabled: true,
+    thunderstorm: true,
+    heavyRain: true,
+    heavySnow: true,
+    extremeTemperature: true,
+    highPrecipitation: true,
+  },
 };
 
 // Read settings from file

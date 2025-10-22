@@ -50,7 +50,6 @@
   { "name": "Karachi", "country": "Pakistan" },
   { "name": "Addis Ababa", "country": "Ethiopia" },
   { "name": "Kiev", "country": "Ukraine" },
-  { "name": "Buenos Aires", "country": "Argentina"},
-  { "name": "Hangzhou", "country": "China"}
-
+  { "name": "Buenos Aires", "country": "Argentina" },
+  { "name": "Hangzhou", "country": "China" }
 ]
