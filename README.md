@@ -100,9 +100,10 @@ Download the latest release for your platform from the [Releases](https://github
 
 1. **Clone the repository**:
    ```bash
+   
    git clone https://github.com/cemakpolat/atmos-sphere.git
    cd atmos-sphere
-   ```
+  ```
 
 2. **Install dependencies**:
    ```bash
