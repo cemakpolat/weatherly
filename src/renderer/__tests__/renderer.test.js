@@ -45,7 +45,7 @@ describe('Renderer Process Tests', () => {
 
   beforeEach(() => {
     // Load the HTML content into the testing environment
-    const htmlFile = fs.readFileSync(path.resolve(__dirname, './index.html'), 'utf8');
+    const htmlFile = fs.readFileSync(path.resolve(__dirname, '../index.html'), 'utf8');
     dom = new JSDOM(htmlFile, { runScripts: 'dangerously', resources: 'usable' });
     document = dom.window.document;
     global.window = dom.window;
