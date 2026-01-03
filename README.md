@@ -162,7 +162,7 @@ npm run format:check
 ## 🎯 Project Structure
 
 ```
-weatherly/
+atmos-sphere/
 ├── src/
 │   ├── main/           # Electron main process
 │   ├── preload.js      # Preload script
