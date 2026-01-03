@@ -301,8 +301,10 @@ async function loadCities() {
   }
 }
 
-// Initialize cities on app start
-loadCities();
+// Initialize cities on app start (skip in test environment)
+if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
+  loadCities();
+}
 
 // --- UI Rendering Functions ---
 
@@ -1554,8 +1556,10 @@ async function loadSettings() {
   }
 }
 
-// Load settings when the app starts
-loadSettings();
+// Load settings when the app starts (skip in test environment)
+if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
+  loadSettings();
+}
 
 // --- Temperature Unit Toggle ---
 
@@ -1791,7 +1795,9 @@ function stopAutoRefresh() {
 
 // --- Event Listeners ---
 
-searchButton.addEventListener('click', handleSearch);
+// Only set up event listeners if not in test environment
+if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
+  searchButton.addEventListener('click', handleSearch);
 
 if (geolocateButton) {
   console.log('Geolocate button found, adding event listener');
@@ -2231,18 +2237,18 @@ function applyMasonryLayout() {
   );
 }
 
-// Apply masonry when window loads (after all content is loaded)
-window.addEventListener('load', () => {
-  setTimeout(applyMasonryLayout, 300);
-  loadAndApplyTheme(); // Load theme on startup
-});
+  // Apply masonry when window loads (after all content is loaded)
+  window.addEventListener('load', () => {
+    setTimeout(applyMasonryLayout, 300);
+    loadAndApplyTheme(); // Load theme on startup
+  });
 
-// Reapply on window resize
-let resizeTimeout;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(applyMasonryLayout, 250);
-});
+  // Reapply on window resize
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(applyMasonryLayout, 250);
+  });
 
 // --- Theme System ---
 
@@ -2294,15 +2300,16 @@ async function saveTheme(themeName) {
   }
 }
 
-// Add click handlers to theme options
-document.addEventListener('DOMContentLoaded', () => {
-  const themeOptions = document.querySelectorAll('.theme-option');
-  themeOptions.forEach(option => {
-    option.addEventListener('click', async () => {
-      const themeName = option.getAttribute('data-theme');
-      applyTheme(themeName);
-      await saveTheme(themeName);
-      showToast('Theme changed successfully', 'success', 2000);
+  // Add click handlers to theme options
+  document.addEventListener('DOMContentLoaded', () => {
+    const themeOptions = document.querySelectorAll('.theme-option');
+    themeOptions.forEach(option => {
+      option.addEventListener('click', async () => {
+        const themeName = option.getAttribute('data-theme');
+        applyTheme(themeName);
+        await saveTheme(themeName);
+        showToast('Theme changed successfully', 'success', 2000);
+      });
     });
   });
-});
+}
