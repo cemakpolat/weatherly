@@ -144,19 +144,6 @@ body[data-theme='cool-mint'] {
   opacity: 0;
   transition: opacity 0.3s ease;
   background-color: #ffffff;
-}
-
-.card:hover .remove-button {
-  opacity: 0.5;
-}
-
-.remove-button:hover {
-  background-color: #ffffff;
-  opacity: 0.5;
-}
-/* Style the remove button */
-.remove-button {
-  background-color: #ffffff;
   border: none;
   border-radius: 50%;
   width: 30px;
@@ -165,6 +152,17 @@ body[data-theme='cool-mint'] {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  position: relative;
+  z-index: 10;
+}
+
+.card:hover .remove-button {
+  opacity: 0.5;
+}
+
+.remove-button:hover {
+  background-color: #ffffff;
+  opacity: 1 !important;
 }
 
 .remove-button i {
@@ -212,6 +210,33 @@ body[data-theme='cool-mint'] {
 
 #custom-title-bar .title {
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#custom-title-bar .title .app-logo {
+  height: 32px;
+  width: auto;
+}
+
+#custom-title-bar .title .app-name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  gap: 2px;
+}
+
+#custom-title-bar .title .app-name-main {
+  font-weight: bold;
+  font-size: 16px;
+  text-transform: lowercase;
+}
+
+#custom-title-bar .title .app-name-sub {
+  font-size: 11px;
+  text-transform: lowercase;
+  opacity: 0.9;
 }
 
 #custom-title-bar .controls {

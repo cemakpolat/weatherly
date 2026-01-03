@@ -42,8 +42,8 @@
     "spectron": "^19.0.0"
   },
   "build": {
-    "appId": "com.iot.weatherly",
-    "productName": "Weatherly",
+    "appId": "com.iot.atmos-sphere",
+    "productName": "atmos sphere",
     "directories": {
       "output": "dist",
       "buildResources": "build"
