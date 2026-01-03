@@ -22,7 +22,7 @@ In case you aim at changing the code, you can simply clone, change and run the c
 ## Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/atmos-app.git
+   git clone https://github.com/your-username/atmos-sphere.git
 2. Start the project
 
     ```
