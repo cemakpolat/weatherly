@@ -499,20 +499,22 @@ function createCityCard(cityData) {
     });
   }
 
-  // Add event listener to the remove button
-  const removeButton = card.querySelector('.remove-button');
-  removeButton.addEventListener('click', () => {
-    // Stop animation if it exists
-    if (card._animation) {
-      card._animation.stop();
-    }
-    card.remove();
-    debouncedSaveSettings();
+  // Add event listeners to ALL remove buttons (both in row-header and grid view)
+  const removeButtons = card.querySelectorAll('.remove-button');
+  removeButtons.forEach(removeButton => {
+    removeButton.addEventListener('click', () => {
+      // Stop animation if it exists
+      if (card._animation) {
+        card._animation.stop();
+      }
+      card.remove();
+      debouncedSaveSettings();
 
-    // Apply masonry layout after removing card
-    setTimeout(() => {
-      applyMasonryLayout();
-    }, 50);
+      // Apply masonry layout after removing card
+      setTimeout(() => {
+        applyMasonryLayout();
+      }, 50);
+    });
   });
 
   // Add event listeners to forecast toggle buttons
