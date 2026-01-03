@@ -1,6 +1,6 @@
-# Weatherly Architecture - SOLID Principles
+# atmos sphere Architecture - SOLID Principles
 
-This document explains the SOLID architecture implemented in the Weatherly application.
+This document explains the SOLID architecture implemented in the atmos sphere application.
 
 ## Overview
 

@@ -1,6 +1,6 @@
 # CI/CD Pipeline Guide
 
-This document explains the Continuous Integration and Continuous Deployment (CI/CD) pipelines for the Weatherly application.
+This document explains the Continuous Integration and Continuous Deployment (CI/CD) pipelines for the atmos sphere application.
 
 ---
 
@@ -17,7 +17,7 @@ This document explains the Continuous Integration and Continuous Deployment (CI/
 
 ## Overview
 
-Weatherly uses GitHub Actions for automated testing, building, and releasing across three platforms:
+atmos sphere uses GitHub Actions for automated testing, building, and releasing across three platforms:
 - **Windows** (`.exe` installer)
 - **macOS** (`.dmg` disk image)
 - **Linux** (`.AppImage` package)
@@ -181,7 +181,7 @@ The pipeline runs **3 parallel build jobs** + 1 release job:
 5. Build Windows installer (`npm run build:win`)
 6. Upload `.exe` artifact
 
-**Output:** `Weatherly-Setup-*.exe`
+**Output:** `atmos-sphere-Setup-*.exe`
 
 ---
 
@@ -197,7 +197,7 @@ The pipeline runs **3 parallel build jobs** + 1 release job:
 6. **Verify DMG integrity** with `hdiutil verify` (auto-detects version)
 7. Upload `.dmg` artifact
 
-**Output:** `Weatherly-*.dmg`
+**Output:** `atmos-sphere-*.dmg`
 
 **DMG Verification:**
 The workflow dynamically finds and verifies the DMG file:
@@ -219,7 +219,7 @@ hdiutil verify "$DMG_FILE"
 5. Build Linux AppImage (`npm run build:linux`)
 6. Upload `.AppImage` artifact
 
-**Output:** `Weatherly-*.AppImage`
+**Output:** `atmos-sphere-*.AppImage`
 
 ---
 
@@ -247,11 +247,11 @@ Automatically generates release notes with:
 
 #### 4. Publish GitHub Release
 - **Tag:** From the pushed tag (e.g., `v1.0.0`)
-- **Title:** `Weatherly v1.0.0`
+- **Title:** `atmos sphere v1.0.0`
 - **Assets:**
-  - `Weatherly-Setup-*.exe` (Windows)
-  - `Weatherly-*.dmg` (macOS)
-  - `Weatherly-*.AppImage` (Linux)
+  - `atmos-sphere-Setup-*.exe` (Windows)
+  - `atmos-sphere-*.dmg` (macOS)
+  - `atmos-sphere-*.AppImage` (Linux)
   - `checksums.txt`
 - **Release Notes:** Auto-generated markdown
 - **Status:** Public (not draft, not pre-release)

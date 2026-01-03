@@ -1,6 +1,6 @@
-# Weatherly - Future Feature Ideas & TODO List
+# atmos sphere - Future Feature Ideas & TODO List
 
-This document contains prioritized feature ideas and improvements for the Weatherly weather application.
+This document contains prioritized feature ideas and improvements for the atmos sphere weather application.
 
 ---
 

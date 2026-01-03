@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Weatherly app now includes a comprehensive weather alerts and notifications system that detects severe weather conditions and notifies users through both native Electron notifications and in-app toast messages.
+The atmos sphere app now includes a comprehensive weather alerts and notifications system that detects severe weather conditions and notifies users through both native Electron notifications and in-app toast messages.
 
 ---
 
