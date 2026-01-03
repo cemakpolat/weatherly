@@ -301,8 +301,10 @@ async function loadCities() {
   }
 }
 
-// Initialize cities on app start
-loadCities();
+// Initialize cities on app start (skip in test environment)
+if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
+  loadCities();
+}
 
 // --- UI Rendering Functions ---
 
@@ -1554,8 +1556,10 @@ async function loadSettings() {
   }
 }
 
-// Load settings when the app starts
-loadSettings();
+// Load settings when the app starts (skip in test environment)
+if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
+  loadSettings();
+}
 
 // --- Temperature Unit Toggle ---
 
@@ -1791,518 +1795,521 @@ function stopAutoRefresh() {
 
 // --- Event Listeners ---
 
-searchButton.addEventListener('click', handleSearch);
+// Only set up event listeners if not in test environment
+if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
+  searchButton.addEventListener('click', handleSearch);
 
-if (geolocateButton) {
-  console.log('Geolocate button found, adding event listener');
-  geolocateButton.addEventListener('click', handleGeolocate);
-} else {
-  console.error('Geolocate button not found!');
-}
-
-citySearch.addEventListener('keydown', e => {
-  const suggestions = autocompleteDropdown.querySelectorAll('.dropdown-item');
-
-  if (e.key === 'ArrowDown') {
-    selectedIndex = Math.min(selectedIndex + 1, suggestions.length - 1);
-    updateSelectedSuggestion(suggestions);
-  } else if (e.key === 'ArrowUp') {
-    selectedIndex = Math.max(selectedIndex - 1, -1);
-    updateSelectedSuggestion(suggestions);
-  } else if (e.key === 'Enter') {
-    e.preventDefault();
-    if (selectedIndex >= 0 && suggestions[selectedIndex]) {
-      citySearch.value = suggestions[selectedIndex].textContent.split(',')[0];
-      autocompleteDropdown.style.display = 'none';
-      handleSearch();
-    } else {
-      handleSearch();
-    }
-  }
-});
-
-let debounceTimer;
-citySearch.addEventListener('input', e => {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => {
-    const input = e.target.value.trim();
-    if (input) {
-      showAutocompleteSuggestions(input);
-    } else {
-      autocompleteDropdown.style.display = 'none';
-    }
-  }, 300);
-});
-
-document.addEventListener('click', e => {
-  if (!citySearch.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
-    autocompleteDropdown.style.display = 'none';
-  }
-});
-
-// --- Electron Integration ---
-
-document.getElementById('close-btn').addEventListener('click', () => {
-  stopAutoRefresh(); // Stop auto-refresh before closing
-  window.electron.send('close-window');
-});
-
-document.getElementById('minimize-btn').addEventListener('click', () => {
-  window.electron.send('minimize-window');
-});
-
-document.getElementById('maximize-btn').addEventListener('click', () => {
-  window.electron.send('maximize-window');
-});
-
-document.getElementById('temp-unit-toggle').addEventListener('click', () => {
-  toggleTemperatureUnit();
-});
-
-// Compact view toggle
-document.getElementById('compact-view-toggle').addEventListener('click', () => {
-  toggleCompactView();
-});
-
-searchToggleBtn.addEventListener('click', () => {
-  searchBarContainer.classList.toggle('d-none');
-  debouncedSaveSettings();
-});
-
-if (scrollableContainer) {
-  scrollableContainer.addEventListener('wheel', event => {
-    scrollableContainer.scrollTop += event.deltaY;
-  });
-}
-
-// --- Keyboard Shortcuts ---
-
-/**
- * Handles global keyboard shortcuts.
- */
-document.addEventListener('keydown', e => {
-  // Detect platform - macOS uses Cmd (metaKey), others use Ctrl
-  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-  const modifier = isMac ? e.metaKey : e.ctrlKey;
-
-  // Ctrl/Cmd + F - Focus search bar
-  if (modifier && e.key.toLowerCase() === 'f') {
-    e.preventDefault();
-    if (searchBarContainer.classList.contains('d-none')) {
-      searchBarContainer.classList.remove('d-none');
-    }
-    citySearch.focus();
-    citySearch.select();
+  if (geolocateButton) {
+    console.log('Geolocate button found, adding event listener');
+    geolocateButton.addEventListener('click', handleGeolocate);
+  } else {
+    console.error('Geolocate button not found!');
   }
 
-  // Ctrl/Cmd + R - Refresh all cities
-  if (modifier && e.key.toLowerCase() === 'r') {
-    e.preventDefault();
-    showToast('Refreshing all cities...', 'info', 2000);
-    refreshAllCities();
-  }
+  citySearch.addEventListener('keydown', e => {
+    const suggestions = autocompleteDropdown.querySelectorAll('.dropdown-item');
 
-  // Ctrl/Cmd + N - Open search (new city)
-  if (modifier && e.key.toLowerCase() === 'n') {
-    e.preventDefault();
-    if (searchBarContainer.classList.contains('d-none')) {
-      searchBarContainer.classList.remove('d-none');
-    }
-    citySearch.focus();
-  }
-
-  // Escape - Close search/autocomplete
-  if (e.key === 'Escape') {
-    if (autocompleteDropdown.style.display === 'block') {
-      autocompleteDropdown.style.display = 'none';
-    } else if (!searchBarContainer.classList.contains('d-none')) {
-      citySearch.blur();
-    }
-  }
-});
-
-// --- Settings Page ---
-
-const mainPage = document.getElementById('main-page');
-const settingsPage = document.getElementById('settings-page');
-const settingsBtn = document.getElementById('settings-btn');
-const backToMainBtn = document.getElementById('back-to-main-btn');
-
-/**
- * Shows the settings page and hides the main page.
- */
-function showSettingsPage() {
-  mainPage.classList.add('d-none');
-  settingsPage.classList.remove('d-none');
-  searchBarContainer.classList.add('d-none');
-  loadSettingsUI();
-}
-
-/**
- * Shows the main page and hides the settings page.
- */
-function showMainPage() {
-  settingsPage.classList.add('d-none');
-  mainPage.classList.remove('d-none');
-}
-
-/**
- * Loads the settings UI with current values.
- */
-async function loadSettingsUI() {
-  try {
-    const settings = await window.electron.readSettings();
-
-    // Load animation settings
-    const globalAnimToggle = document.getElementById('global-animations-toggle');
-    const animationPrefs = settings.animationPreferences || {
-      enabled: true,
-    };
-    globalAnimToggle.checked = animationPrefs.enabled;
-
-    // Load weather alert settings
-    const alertPrefs = settings.weatherAlerts || {
-      enabled: true,
-      thunderstorm: true,
-      heavyRain: true,
-      heavySnow: true,
-      extremeTemperature: true,
-      highPrecipitation: true,
-    };
-
-    document.getElementById('alerts-enabled').checked = alertPrefs.enabled;
-    document.getElementById('alert-thunderstorm').checked = alertPrefs.thunderstorm;
-    document.getElementById('alert-heavy-rain').checked = alertPrefs.heavyRain;
-    document.getElementById('alert-heavy-snow').checked = alertPrefs.heavySnow;
-    document.getElementById('alert-extreme-temp').checked = alertPrefs.extremeTemperature;
-    document.getElementById('alert-high-precip').checked = alertPrefs.highPrecipitation;
-
-    // Load auto-refresh interval setting
-    const autoRefreshMinutes = settings.autoRefreshInterval || 5; // Default to 5 minutes
-    const slider = document.getElementById('auto-refresh-interval');
-    const valueDisplay = document.getElementById('refresh-interval-value');
-    if (slider && valueDisplay) {
-      slider.value = autoRefreshMinutes;
-      valueDisplay.textContent = `${autoRefreshMinutes} min`;
-    }
-
-    // Load theme and apply active state
-    const theme = settings.theme || 'purple-blue';
-    applyTheme(theme);
-  } catch (error) {
-    console.error('Error loading settings UI:', error);
-  }
-}
-
-/**
- * Saves animation preferences to settings.
- */
-async function saveAnimationPreferences() {
-  const settings = await window.electron.readSettings();
-
-  const globalEnabled = document.getElementById('global-animations-toggle').checked;
-
-  settings.animationPreferences = {
-    enabled: globalEnabled,
-  };
-
-  try {
-    await window.electron.writeSettings(settings);
-    console.log('Animation preferences saved:', settings.animationPreferences);
-
-    // Reload all card animations to reflect the new settings
-    await reloadAllCardAnimations();
-  } catch (error) {
-    console.error('Error saving animation preferences:', error);
-    showToast('Failed to save animation preferences', 'error');
-  }
-}
-
-/**
- * Reloads animations for all city cards based on current settings.
- */
-async function reloadAllCardAnimations() {
-  const allCards = citiesContainer.querySelectorAll('.col');
-
-  allCards.forEach(card => {
-    // Stop existing animation if it exists
-    if (card._animation) {
-      card._animation.stop();
-      card._animation = null;
-    }
-
-    // Reinitialize animation with new settings
-    const cityName = card.getAttribute('data-city-name');
-    const weatherCode = parseInt(card.getAttribute('data-weather-code'));
-
-    if (cityName && !isNaN(weatherCode)) {
-      initializeCardAnimation(card, cityName, weatherCode);
+    if (e.key === 'ArrowDown') {
+      selectedIndex = Math.min(selectedIndex + 1, suggestions.length - 1);
+      updateSelectedSuggestion(suggestions);
+    } else if (e.key === 'ArrowUp') {
+      selectedIndex = Math.max(selectedIndex - 1, -1);
+      updateSelectedSuggestion(suggestions);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedIndex >= 0 && suggestions[selectedIndex]) {
+        citySearch.value = suggestions[selectedIndex].textContent.split(',')[0];
+        autocompleteDropdown.style.display = 'none';
+        handleSearch();
+      } else {
+        handleSearch();
+      }
     }
   });
-}
 
-/**
- * Saves weather alert preferences to settings.
- */
-async function saveAlertPreferences() {
-  const settings = await window.electron.readSettings();
+  let debounceTimer;
+  citySearch.addEventListener('input', e => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const input = e.target.value.trim();
+      if (input) {
+        showAutocompleteSuggestions(input);
+      } else {
+        autocompleteDropdown.style.display = 'none';
+      }
+    }, 300);
+  });
 
-  settings.weatherAlerts = {
-    enabled: document.getElementById('alerts-enabled').checked,
-    thunderstorm: document.getElementById('alert-thunderstorm').checked,
-    heavyRain: document.getElementById('alert-heavy-rain').checked,
-    heavySnow: document.getElementById('alert-heavy-snow').checked,
-    extremeTemperature: document.getElementById('alert-extreme-temp').checked,
-    highPrecipitation: document.getElementById('alert-high-precip').checked,
-  };
+  document.addEventListener('click', e => {
+    if (!citySearch.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+      autocompleteDropdown.style.display = 'none';
+    }
+  });
 
-  try {
-    await window.electron.writeSettings(settings);
-    console.log('Alert preferences saved:', settings.weatherAlerts);
-  } catch (error) {
-    console.error('Error saving alert preferences:', error);
-    showToast('Failed to save alert preferences', 'error');
+  // --- Electron Integration ---
+
+  document.getElementById('close-btn').addEventListener('click', () => {
+    stopAutoRefresh(); // Stop auto-refresh before closing
+    window.electron.send('close-window');
+  });
+
+  document.getElementById('minimize-btn').addEventListener('click', () => {
+    window.electron.send('minimize-window');
+  });
+
+  document.getElementById('maximize-btn').addEventListener('click', () => {
+    window.electron.send('maximize-window');
+  });
+
+  document.getElementById('temp-unit-toggle').addEventListener('click', () => {
+    toggleTemperatureUnit();
+  });
+
+  // Compact view toggle
+  document.getElementById('compact-view-toggle').addEventListener('click', () => {
+    toggleCompactView();
+  });
+
+  searchToggleBtn.addEventListener('click', () => {
+    searchBarContainer.classList.toggle('d-none');
+    debouncedSaveSettings();
+  });
+
+  if (scrollableContainer) {
+    scrollableContainer.addEventListener('wheel', event => {
+      scrollableContainer.scrollTop += event.deltaY;
+    });
   }
-}
 
-/**
- * Saves auto-refresh interval preference to settings and restarts the refresh timer.
- */
-async function saveAutoRefreshInterval() {
-  const settings = await window.electron.readSettings();
-  const intervalMinutes = parseInt(document.getElementById('auto-refresh-interval').value);
+  // --- Keyboard Shortcuts ---
 
-  settings.autoRefreshInterval = intervalMinutes;
+  /**
+   * Handles global keyboard shortcuts.
+   */
+  document.addEventListener('keydown', e => {
+    // Detect platform - macOS uses Cmd (metaKey), others use Ctrl
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const modifier = isMac ? e.metaKey : e.ctrlKey;
 
-  try {
-    await window.electron.writeSettings(settings);
-    console.log('Auto-refresh interval saved:', intervalMinutes, 'minutes');
-
-    // Restart auto-refresh with new interval
-    if (autoRefreshInterval) {
-      clearInterval(autoRefreshInterval);
+    // Ctrl/Cmd + F - Focus search bar
+    if (modifier && e.key.toLowerCase() === 'f') {
+      e.preventDefault();
+      if (searchBarContainer.classList.contains('d-none')) {
+        searchBarContainer.classList.remove('d-none');
+      }
+      citySearch.focus();
+      citySearch.select();
     }
 
-    // Convert minutes to milliseconds
-    const intervalMs = intervalMinutes * 60 * 1000;
-    autoRefreshInterval = setInterval(() => {
-      console.log('Auto-refreshing weather data...');
+    // Ctrl/Cmd + R - Refresh all cities
+    if (modifier && e.key.toLowerCase() === 'r') {
+      e.preventDefault();
+      showToast('Refreshing all cities...', 'info', 2000);
       refreshAllCities();
-    }, intervalMs);
+    }
 
-    showToast(
-      `Auto-refresh set to ${intervalMinutes} minute${intervalMinutes > 1 ? 's' : ''}`,
-      'success',
-      2000
-    );
-  } catch (error) {
-    console.error('Error saving auto-refresh interval:', error);
-    showToast('Failed to save auto-refresh interval', 'error');
-  }
-}
+    // Ctrl/Cmd + N - Open search (new city)
+    if (modifier && e.key.toLowerCase() === 'n') {
+      e.preventDefault();
+      if (searchBarContainer.classList.contains('d-none')) {
+        searchBarContainer.classList.remove('d-none');
+      }
+      citySearch.focus();
+    }
 
-// Settings page event listeners
-settingsBtn.addEventListener('click', () => {
-  showSettingsPage();
-});
-
-backToMainBtn.addEventListener('click', () => {
-  showMainPage();
-});
-
-// Global animations toggle
-document.getElementById('global-animations-toggle').addEventListener('change', async () => {
-  await saveAnimationPreferences();
-  showToast('Animation settings saved', 'success', 2000);
-});
-
-// Weather alerts toggles
-document.getElementById('alerts-enabled').addEventListener('change', async () => {
-  await saveAlertPreferences();
-  showToast('Alert settings saved', 'success', 2000);
-});
-
-[
-  'alert-thunderstorm',
-  'alert-heavy-rain',
-  'alert-heavy-snow',
-  'alert-extreme-temp',
-  'alert-high-precip',
-].forEach(id => {
-  document.getElementById(id).addEventListener('change', async () => {
-    await saveAlertPreferences();
-  });
-});
-
-// Auto-refresh interval slider
-const refreshIntervalSlider = document.getElementById('auto-refresh-interval');
-const refreshIntervalValue = document.getElementById('refresh-interval-value');
-
-if (refreshIntervalSlider && refreshIntervalValue) {
-  // Update display value as user drags slider
-  refreshIntervalSlider.addEventListener('input', () => {
-    const minutes = refreshIntervalSlider.value;
-    refreshIntervalValue.textContent = `${minutes} min`;
+    // Escape - Close search/autocomplete
+    if (e.key === 'Escape') {
+      if (autocompleteDropdown.style.display === 'block') {
+        autocompleteDropdown.style.display = 'none';
+      } else if (!searchBarContainer.classList.contains('d-none')) {
+        citySearch.blur();
+      }
+    }
   });
 
-  // Save and apply setting when user releases slider
-  refreshIntervalSlider.addEventListener('change', async () => {
-    await saveAutoRefreshInterval();
-  });
-}
+  // --- Settings Page ---
 
-// --- Masonry Layout Handler ---
+  const mainPage = document.getElementById('main-page');
+  const settingsPage = document.getElementById('settings-page');
+  const settingsBtn = document.getElementById('settings-btn');
+  const backToMainBtn = document.getElementById('back-to-main-btn');
 
-const columnGap = 12; // Reduced gap for better space usage
-const cardWidth = 320; // Smaller cards to fit more
-
-/**
- * Applies masonry layout to the cities grid
- */
-function applyMasonryLayout() {
-  const container = document.getElementById('cities');
-  const items = Array.from(container.querySelectorAll('.col'));
-
-  console.log(`[Masonry] Applying layout with ${items.length} items`);
-
-  if (items.length === 0) {
-    container.style.height = '0px';
-    console.log('[Masonry] No items to layout, setting height to 0');
-    return;
+  /**
+   * Shows the settings page and hides the main page.
+   */
+  function showSettingsPage() {
+    mainPage.classList.add('d-none');
+    settingsPage.classList.remove('d-none');
+    searchBarContainer.classList.add('d-none');
+    loadSettingsUI();
   }
 
-  // Calculate number of columns based on container width
-  const containerWidth = container.offsetWidth;
-  const numColumns = Math.max(
-    1,
-    Math.floor((containerWidth + columnGap) / (cardWidth + columnGap))
-  );
+  /**
+   * Shows the main page and hides the settings page.
+   */
+  function showMainPage() {
+    settingsPage.classList.add('d-none');
+    mainPage.classList.remove('d-none');
+  }
 
-  console.log(`[Masonry] Container width: ${containerWidth}px, Columns: ${numColumns}`);
+  /**
+   * Loads the settings UI with current values.
+   */
+  async function loadSettingsUI() {
+    try {
+      const settings = await window.electron.readSettings();
 
-  // Calculate total grid width
-  const gridWidth = numColumns * cardWidth + (numColumns - 1) * columnGap;
+      // Load animation settings
+      const globalAnimToggle = document.getElementById('global-animations-toggle');
+      const animationPrefs = settings.animationPreferences || {
+        enabled: true,
+      };
+      globalAnimToggle.checked = animationPrefs.enabled;
 
-  // Calculate left offset to center the grid
-  const leftOffset = Math.max(0, (containerWidth - gridWidth) / 2);
+      // Load weather alert settings
+      const alertPrefs = settings.weatherAlerts || {
+        enabled: true,
+        thunderstorm: true,
+        heavyRain: true,
+        heavySnow: true,
+        extremeTemperature: true,
+        highPrecipitation: true,
+      };
 
-  console.log(`[Masonry] Grid width: ${gridWidth}px, Left offset: ${leftOffset}px`);
+      document.getElementById('alerts-enabled').checked = alertPrefs.enabled;
+      document.getElementById('alert-thunderstorm').checked = alertPrefs.thunderstorm;
+      document.getElementById('alert-heavy-rain').checked = alertPrefs.heavyRain;
+      document.getElementById('alert-heavy-snow').checked = alertPrefs.heavySnow;
+      document.getElementById('alert-extreme-temp').checked = alertPrefs.extremeTemperature;
+      document.getElementById('alert-high-precip').checked = alertPrefs.highPrecipitation;
 
-  // Create column height trackers
-  const columnHeights = new Array(numColumns).fill(0);
+      // Load auto-refresh interval setting
+      const autoRefreshMinutes = settings.autoRefreshInterval || 5; // Default to 5 minutes
+      const slider = document.getElementById('auto-refresh-interval');
+      const valueDisplay = document.getElementById('refresh-interval-value');
+      if (slider && valueDisplay) {
+        slider.value = autoRefreshMinutes;
+        valueDisplay.textContent = `${autoRefreshMinutes} min`;
+      }
 
-  // Position each item
-  items.forEach((item, index) => {
-    // Ensure item is visible
-    item.style.opacity = '1';
+      // Load theme and apply active state
+      const theme = settings.theme || 'purple-blue';
+      applyTheme(theme);
+    } catch (error) {
+      console.error('Error loading settings UI:', error);
+    }
+  }
 
-    // Find shortest column
-    const shortestColumn = columnHeights.indexOf(Math.min(...columnHeights));
+  /**
+   * Saves animation preferences to settings.
+   */
+  async function saveAnimationPreferences() {
+    const settings = await window.electron.readSettings();
 
-    // Calculate position with centering offset
-    const x = leftOffset + shortestColumn * (cardWidth + columnGap);
-    const y = columnHeights[shortestColumn];
+    const globalEnabled = document.getElementById('global-animations-toggle').checked;
 
-    // Apply position
-    item.style.position = 'absolute';
-    item.style.left = `${x}px`;
-    item.style.top = `${y}px`;
-    item.style.width = `${cardWidth}px`;
-    item.style.transition = 'top 0.3s ease, left 0.3s ease, opacity 0.3s ease';
+    settings.animationPreferences = {
+      enabled: globalEnabled,
+    };
 
-    if (index === 0) {
-      console.log(
-        `[Masonry] First card positioned at (${x}, ${y}), height: ${item.offsetHeight}px`
+    try {
+      await window.electron.writeSettings(settings);
+      console.log('Animation preferences saved:', settings.animationPreferences);
+
+      // Reload all card animations to reflect the new settings
+      await reloadAllCardAnimations();
+    } catch (error) {
+      console.error('Error saving animation preferences:', error);
+      showToast('Failed to save animation preferences', 'error');
+    }
+  }
+
+  /**
+   * Reloads animations for all city cards based on current settings.
+   */
+  async function reloadAllCardAnimations() {
+    const allCards = citiesContainer.querySelectorAll('.col');
+
+    allCards.forEach(card => {
+      // Stop existing animation if it exists
+      if (card._animation) {
+        card._animation.stop();
+        card._animation = null;
+      }
+
+      // Reinitialize animation with new settings
+      const cityName = card.getAttribute('data-city-name');
+      const weatherCode = parseInt(card.getAttribute('data-weather-code'));
+
+      if (cityName && !isNaN(weatherCode)) {
+        initializeCardAnimation(card, cityName, weatherCode);
+      }
+    });
+  }
+
+  /**
+   * Saves weather alert preferences to settings.
+   */
+  async function saveAlertPreferences() {
+    const settings = await window.electron.readSettings();
+
+    settings.weatherAlerts = {
+      enabled: document.getElementById('alerts-enabled').checked,
+      thunderstorm: document.getElementById('alert-thunderstorm').checked,
+      heavyRain: document.getElementById('alert-heavy-rain').checked,
+      heavySnow: document.getElementById('alert-heavy-snow').checked,
+      extremeTemperature: document.getElementById('alert-extreme-temp').checked,
+      highPrecipitation: document.getElementById('alert-high-precip').checked,
+    };
+
+    try {
+      await window.electron.writeSettings(settings);
+      console.log('Alert preferences saved:', settings.weatherAlerts);
+    } catch (error) {
+      console.error('Error saving alert preferences:', error);
+      showToast('Failed to save alert preferences', 'error');
+    }
+  }
+
+  /**
+   * Saves auto-refresh interval preference to settings and restarts the refresh timer.
+   */
+  async function saveAutoRefreshInterval() {
+    const settings = await window.electron.readSettings();
+    const intervalMinutes = parseInt(document.getElementById('auto-refresh-interval').value);
+
+    settings.autoRefreshInterval = intervalMinutes;
+
+    try {
+      await window.electron.writeSettings(settings);
+      console.log('Auto-refresh interval saved:', intervalMinutes, 'minutes');
+
+      // Restart auto-refresh with new interval
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+      }
+
+      // Convert minutes to milliseconds
+      const intervalMs = intervalMinutes * 60 * 1000;
+      autoRefreshInterval = setInterval(() => {
+        console.log('Auto-refreshing weather data...');
+        refreshAllCities();
+      }, intervalMs);
+
+      showToast(
+        `Auto-refresh set to ${intervalMinutes} minute${intervalMinutes > 1 ? 's' : ''}`,
+        'success',
+        2000
       );
+    } catch (error) {
+      console.error('Error saving auto-refresh interval:', error);
+      showToast('Failed to save auto-refresh interval', 'error');
     }
+  }
 
-    // Update column height
-    columnHeights[shortestColumn] += item.offsetHeight + columnGap;
+  // Settings page event listeners
+  settingsBtn.addEventListener('click', () => {
+    showSettingsPage();
   });
 
-  // Set container height
-  const maxHeight = Math.max(...columnHeights);
-  container.style.height = `${maxHeight}px`;
-  container.style.position = 'relative';
-
-  console.log(
-    `[Masonry] Layout complete. Container height: ${maxHeight}px, Column heights:`,
-    columnHeights
-  );
-}
-
-// Apply masonry when window loads (after all content is loaded)
-window.addEventListener('load', () => {
-  setTimeout(applyMasonryLayout, 300);
-  loadAndApplyTheme(); // Load theme on startup
-});
-
-// Reapply on window resize
-let resizeTimeout;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(applyMasonryLayout, 250);
-});
-
-// --- Theme System ---
-
-/**
- * Loads and applies the saved theme
- */
-async function loadAndApplyTheme() {
-  try {
-    const settings = await window.electron.readSettings();
-    const theme = settings.theme || 'purple-blue';
-    applyTheme(theme);
-  } catch (error) {
-    console.error('Error loading theme:', error);
-    applyTheme('purple-blue'); // Default theme
-  }
-}
-
-/**
- * Applies a theme to the body element
- * @param {string} themeName - The theme name
- */
-function applyTheme(themeName) {
-  document.body.setAttribute('data-theme', themeName);
-
-  // Update active state in theme grid if on settings page
-  const themeOptions = document.querySelectorAll('.theme-option');
-  themeOptions.forEach(option => {
-    if (option.getAttribute('data-theme') === themeName) {
-      option.classList.add('active');
-    } else {
-      option.classList.remove('active');
-    }
+  backToMainBtn.addEventListener('click', () => {
+    showMainPage();
   });
-}
 
-/**
- * Saves the selected theme
- * @param {string} themeName - The theme name
- */
-async function saveTheme(themeName) {
-  try {
-    const settings = await window.electron.readSettings();
-    settings.theme = themeName;
-    await window.electron.writeSettings(settings);
-    console.log('Theme saved:', themeName);
-  } catch (error) {
-    console.error('Error saving theme:', error);
-    showToast('Failed to save theme', 'error');
-  }
-}
+  // Global animations toggle
+  document.getElementById('global-animations-toggle').addEventListener('change', async () => {
+    await saveAnimationPreferences();
+    showToast('Animation settings saved', 'success', 2000);
+  });
 
-// Add click handlers to theme options
-document.addEventListener('DOMContentLoaded', () => {
-  const themeOptions = document.querySelectorAll('.theme-option');
-  themeOptions.forEach(option => {
-    option.addEventListener('click', async () => {
-      const themeName = option.getAttribute('data-theme');
-      applyTheme(themeName);
-      await saveTheme(themeName);
-      showToast('Theme changed successfully', 'success', 2000);
+  // Weather alerts toggles
+  document.getElementById('alerts-enabled').addEventListener('change', async () => {
+    await saveAlertPreferences();
+    showToast('Alert settings saved', 'success', 2000);
+  });
+
+  [
+    'alert-thunderstorm',
+    'alert-heavy-rain',
+    'alert-heavy-snow',
+    'alert-extreme-temp',
+    'alert-high-precip',
+  ].forEach(id => {
+    document.getElementById(id).addEventListener('change', async () => {
+      await saveAlertPreferences();
     });
   });
-});
+
+  // Auto-refresh interval slider
+  const refreshIntervalSlider = document.getElementById('auto-refresh-interval');
+  const refreshIntervalValue = document.getElementById('refresh-interval-value');
+
+  if (refreshIntervalSlider && refreshIntervalValue) {
+    // Update display value as user drags slider
+    refreshIntervalSlider.addEventListener('input', () => {
+      const minutes = refreshIntervalSlider.value;
+      refreshIntervalValue.textContent = `${minutes} min`;
+    });
+
+    // Save and apply setting when user releases slider
+    refreshIntervalSlider.addEventListener('change', async () => {
+      await saveAutoRefreshInterval();
+    });
+  }
+
+  // --- Masonry Layout Handler ---
+
+  const columnGap = 12; // Reduced gap for better space usage
+  const cardWidth = 320; // Smaller cards to fit more
+
+  /**
+   * Applies masonry layout to the cities grid
+   */
+  function applyMasonryLayout() {
+    const container = document.getElementById('cities');
+    const items = Array.from(container.querySelectorAll('.col'));
+
+    console.log(`[Masonry] Applying layout with ${items.length} items`);
+
+    if (items.length === 0) {
+      container.style.height = '0px';
+      console.log('[Masonry] No items to layout, setting height to 0');
+      return;
+    }
+
+    // Calculate number of columns based on container width
+    const containerWidth = container.offsetWidth;
+    const numColumns = Math.max(
+      1,
+      Math.floor((containerWidth + columnGap) / (cardWidth + columnGap))
+    );
+
+    console.log(`[Masonry] Container width: ${containerWidth}px, Columns: ${numColumns}`);
+
+    // Calculate total grid width
+    const gridWidth = numColumns * cardWidth + (numColumns - 1) * columnGap;
+
+    // Calculate left offset to center the grid
+    const leftOffset = Math.max(0, (containerWidth - gridWidth) / 2);
+
+    console.log(`[Masonry] Grid width: ${gridWidth}px, Left offset: ${leftOffset}px`);
+
+    // Create column height trackers
+    const columnHeights = new Array(numColumns).fill(0);
+
+    // Position each item
+    items.forEach((item, index) => {
+      // Ensure item is visible
+      item.style.opacity = '1';
+
+      // Find shortest column
+      const shortestColumn = columnHeights.indexOf(Math.min(...columnHeights));
+
+      // Calculate position with centering offset
+      const x = leftOffset + shortestColumn * (cardWidth + columnGap);
+      const y = columnHeights[shortestColumn];
+
+      // Apply position
+      item.style.position = 'absolute';
+      item.style.left = `${x}px`;
+      item.style.top = `${y}px`;
+      item.style.width = `${cardWidth}px`;
+      item.style.transition = 'top 0.3s ease, left 0.3s ease, opacity 0.3s ease';
+
+      if (index === 0) {
+        console.log(
+          `[Masonry] First card positioned at (${x}, ${y}), height: ${item.offsetHeight}px`
+        );
+      }
+
+      // Update column height
+      columnHeights[shortestColumn] += item.offsetHeight + columnGap;
+    });
+
+    // Set container height
+    const maxHeight = Math.max(...columnHeights);
+    container.style.height = `${maxHeight}px`;
+    container.style.position = 'relative';
+
+    console.log(
+      `[Masonry] Layout complete. Container height: ${maxHeight}px, Column heights:`,
+      columnHeights
+    );
+  }
+
+  // Apply masonry when window loads (after all content is loaded)
+  window.addEventListener('load', () => {
+    setTimeout(applyMasonryLayout, 300);
+    loadAndApplyTheme(); // Load theme on startup
+  });
+
+  // Reapply on window resize
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(applyMasonryLayout, 250);
+  });
+
+  // --- Theme System ---
+
+  /**
+   * Loads and applies the saved theme
+   */
+  async function loadAndApplyTheme() {
+    try {
+      const settings = await window.electron.readSettings();
+      const theme = settings.theme || 'purple-blue';
+      applyTheme(theme);
+    } catch (error) {
+      console.error('Error loading theme:', error);
+      applyTheme('purple-blue'); // Default theme
+    }
+  }
+
+  /**
+   * Applies a theme to the body element
+   * @param {string} themeName - The theme name
+   */
+  function applyTheme(themeName) {
+    document.body.setAttribute('data-theme', themeName);
+
+    // Update active state in theme grid if on settings page
+    const themeOptions = document.querySelectorAll('.theme-option');
+    themeOptions.forEach(option => {
+      if (option.getAttribute('data-theme') === themeName) {
+        option.classList.add('active');
+      } else {
+        option.classList.remove('active');
+      }
+    });
+  }
+
+  /**
+   * Saves the selected theme
+   * @param {string} themeName - The theme name
+   */
+  async function saveTheme(themeName) {
+    try {
+      const settings = await window.electron.readSettings();
+      settings.theme = themeName;
+      await window.electron.writeSettings(settings);
+      console.log('Theme saved:', themeName);
+    } catch (error) {
+      console.error('Error saving theme:', error);
+      showToast('Failed to save theme', 'error');
+    }
+  }
+
+  // Add click handlers to theme options
+  document.addEventListener('DOMContentLoaded', () => {
+    const themeOptions = document.querySelectorAll('.theme-option');
+    themeOptions.forEach(option => {
+      option.addEventListener('click', async () => {
+        const themeName = option.getAttribute('data-theme');
+        applyTheme(themeName);
+        await saveTheme(themeName);
+        showToast('Theme changed successfully', 'success', 2000);
+      });
+    });
+  });
+}
