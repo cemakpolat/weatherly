@@ -125,13 +125,13 @@ jobs:
 
       - name: Create release notes
         run: |
-          echo "# Weatherly ${{ github.ref_name }}" > release_notes_full.md
+          echo "# atmos sphere ${{ github.ref_name }}" > release_notes_full.md
           echo "" >> release_notes_full.md
           echo "## Downloads" >> release_notes_full.md
           echo "" >> release_notes_full.md
-          echo "- **Windows**: \`Weatherly-Setup-*.exe\`" >> release_notes_full.md
-          echo "- **macOS**: \`Weatherly-*.dmg\`" >> release_notes_full.md
-          echo "- **Linux**: \`Weatherly-*.AppImage\`" >> release_notes_full.md
+          echo "- **Windows**: \`atmos-sphere-Setup-*.exe\`" >> release_notes_full.md
+          echo "- **macOS**: \`atmos-sphere-*.dmg\`" >> release_notes_full.md
+          echo "- **Linux**: \`atmos-sphere-*.AppImage\`" >> release_notes_full.md
           echo "" >> release_notes_full.md
           echo "## What's Changed" >> release_notes_full.md
           echo "See the [IMPROVEMENTS.md](https://github.com/${{ github.repository }}/blob/main/IMPROVEMENTS.md) for details." >> release_notes_full.md
@@ -141,7 +141,7 @@ jobs:
       - uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          name: Weatherly ${{ github.ref_name }}
+          name: atmos sphere ${{ github.ref_name }}
           body_path: release_notes_full.md
           files: |
             artifacts/windows-build/*

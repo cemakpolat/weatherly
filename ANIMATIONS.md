@@ -1,6 +1,6 @@
 # Weather-Based Background Animations
 
-This document explains the weather animation system implemented in the Weatherly application.
+This document explains the weather animation system implemented in the atmos sphere application.
 
 ## Overview
 

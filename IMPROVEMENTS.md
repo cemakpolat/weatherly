@@ -1,6 +1,6 @@
-# Weatherly App - Improvements Summary
+# atmos sphere App - Improvements Summary
 
-This document outlines all the improvements made to the Weatherly Electron weather application.
+This document outlines all the improvements made to the atmos sphere Electron weather application.
 
 ## 🎯 Completed Improvements
 
@@ -290,7 +290,7 @@ City cards now store data for efficient updates:
 
 ## 🎉 Summary
 
-This update transforms Weatherly from a basic weather app into a polished, production-ready desktop application with:
+This update transforms atmos sphere from a basic weather app into a polished, production-ready desktop application with:
 - **Better UX** - Loading states, error messages, and notifications
 - **More features** - Temperature toggle, auto-refresh, and manual refresh
 - **Improved reliability** - Comprehensive error handling
