@@ -52,7 +52,7 @@
 
     <!-- Search Bar (initially hidden) -->
     <div class="container my-5">
-      <div id="search-bar-container">
+      <div id="search-bar-container" class="d-none">
         <div class="row justify-content-center mb-4">
           <div class="col-md-12 position-relative">
             <div class="input-group">
@@ -77,6 +77,19 @@
             <div id="autocompleteDropdown" class="dropdown-menu w-100"></div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Loading Spinner (shown during app startup) -->
+    <div id="app-loading-spinner" class="app-loading-container">
+      <div class="loading-content">
+        <div class="spinner-container">
+          <i class="fas fa-cloud-sun fa-3x loading-icon"></i>
+          <div class="spinner-border text-light mt-3" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+        <p class="loading-text mt-3">Loading atmos sphere...</p>
       </div>
     </div>
 
@@ -270,6 +283,72 @@
                     <span>1 min</span>
                     <span class="float-end">60 min</span>
                   </div>
+                </div>
+              </div>
+
+              <!-- API Keys Section -->
+              <div class="settings-section mt-4">
+                <h4 class="settings-section-title">
+                  <i class="fas fa-key me-2"></i>
+                  API Keys
+                </h4>
+                <p class="text-muted small mb-3">
+                  Configure API keys for external weather services. These keys are stored locally on
+                  your device.
+                </p>
+
+                <!-- OpenWeatherMap API Key -->
+                <div class="settings-option mb-3">
+                  <label for="openweathermap-api-key" class="form-label">
+                    <i class="fas fa-cloud me-2"></i>OpenWeatherMap API Key
+                  </label>
+                  <div class="small text-muted mb-2">
+                    <strong>⚠️ Note:</strong> Weather map radar overlays require a <strong>paid
+                    OpenWeatherMap subscription</strong> ($40+/month).
+                    <br />
+                    Free API keys will not work for radar tiles.
+                    <a
+                      href="https://openweathermap.org/price"
+                      target="_blank"
+                      class="text-decoration-none ms-1"
+                    >
+                      View pricing <i class="fas fa-external-link-alt fa-xs"></i>
+                    </a>
+                  </div>
+                  <div class="input-group mb-2">
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="openweathermap-api-key"
+                      placeholder="Enter your OpenWeatherMap API key"
+                    />
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      id="toggle-owm-key-visibility"
+                      title="Show/Hide API key"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-primary btn-sm" id="save-owm-api-key">
+                      <i class="fas fa-save me-1"></i>Save Key
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" id="clear-owm-api-key">
+                      <i class="fas fa-trash me-1"></i>Clear
+                    </button>
+                  </div>
+                  <div id="owm-api-key-status" class="mt-2"></div>
+                </div>
+
+                <!-- Placeholder for future API keys -->
+                <div class="alert alert-info alert-sm mb-0">
+                  <i class="fas fa-info-circle me-2"></i>
+                  <small
+                    >More API integrations coming soon! This section is designed to be
+                    extensible.</small
+                  >
                 </div>
               </div>
 
