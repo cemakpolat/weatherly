@@ -781,9 +781,7 @@ function toggleForecastView(card, view) {
 
   // Reapply masonry layout after view changes
   setTimeout(() => {
-    if (typeof applyMasonryLayout === 'function') {
-      applyMasonryLayout();
-    }
+    applyMasonryLayout();
   }, 50);
 }
 
@@ -856,9 +854,7 @@ async function toggleCardTab(card, tab) {
 
   // Reapply masonry layout after tab changes
   setTimeout(() => {
-    if (typeof applyMasonryLayout === 'function') {
-      applyMasonryLayout();
-    }
+    applyMasonryLayout();
   }, 50);
 }
 
@@ -1231,41 +1227,67 @@ async function loadRadarMap(card, cityName) {
     // Add city marker
     L.marker([latitude, longitude]).addTo(map).bindPopup(`<b>${cityName}</b>`).openPopup();
 
-    // Create weather overlay layers (using OpenWeatherMap)
-    const OWM_API_KEY = 'your-api-key-here'; // Note: OpenWeatherMap requires API key for tiles
+    // Get OpenWeatherMap API key from settings
+    const settings = await window.electron.readSettings();
+    const apiKeys = settings.apiKeys || {};
+    const OWM_API_KEY = apiKeys.openweathermap || '';
 
-    // Precipitation layer
-    const precipLayer = L.tileLayer(
-      `https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${OWM_API_KEY}`,
-      {
-        attribution: '&copy; <a href="https://openweathermap.org">OpenWeatherMap</a>',
-        opacity: 0.6,
-        maxZoom: 19,
-      }
-    );
+    // Check if API key is configured (must have actual content, not just empty/whitespace)
+    const hasValidApiKey = OWM_API_KEY && OWM_API_KEY.trim().length > 0;
 
-    // Clouds layer
-    const cloudsLayer = L.tileLayer(
-      `https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${OWM_API_KEY}`,
-      {
-        attribution: '&copy; <a href="https://openweathermap.org">OpenWeatherMap</a>',
-        opacity: 0.5,
-        maxZoom: 19,
-      }
-    );
+    console.log('[Radar] API key check:', {
+      hasKey: !!OWM_API_KEY,
+      keyLength: OWM_API_KEY ? OWM_API_KEY.length : 0,
+      isValid: hasValidApiKey,
+    });
 
-    // Temperature layer
-    const tempLayer = L.tileLayer(
-      `https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${OWM_API_KEY}`,
-      {
-        attribution: '&copy; <a href="https://openweathermap.org">OpenWeatherMap</a>',
-        opacity: 0.6,
-        maxZoom: 19,
-      }
-    );
+    // Only create layers if API key is configured
+    let precipLayer = null;
+    let cloudsLayer = null;
+    let tempLayer = null;
 
-    // Add precipitation layer by default (since checkbox is checked)
-    precipLayer.addTo(map);
+    if (hasValidApiKey) {
+      console.log('[Radar] Creating weather overlay layers with API key');
+
+      // Precipitation layer
+      precipLayer = L.tileLayer(
+        `https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${OWM_API_KEY}`,
+        {
+          attribution: '&copy; <a href="https://openweathermap.org">OpenWeatherMap</a>',
+          opacity: 0.6,
+          maxZoom: 19,
+        }
+      );
+
+      // Clouds layer
+      cloudsLayer = L.tileLayer(
+        `https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${OWM_API_KEY}`,
+        {
+          attribution: '&copy; <a href="https://openweathermap.org">OpenWeatherMap</a>',
+          opacity: 0.5,
+          maxZoom: 19,
+        }
+      );
+
+      // Temperature layer
+      tempLayer = L.tileLayer(
+        `https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${OWM_API_KEY}`,
+        {
+          attribution: '&copy; <a href="https://openweathermap.org">OpenWeatherMap</a>',
+          opacity: 0.6,
+          maxZoom: 19,
+        }
+      );
+
+      console.log('[Radar] Weather layers created successfully');
+    } else {
+      console.log('[Radar] Skipping weather layer creation - no valid API key');
+    }
+
+    // Add precipitation layer by default (since checkbox is checked) if API key is configured
+    if (precipLayer) {
+      precipLayer.addTo(map);
+    }
 
     // Store layer references on the map container for toggle functionality
     radarMapContainer._precipLayer = precipLayer;
@@ -1273,34 +1295,91 @@ async function loadRadarMap(card, cityName) {
     radarMapContainer._tempLayer = tempLayer;
     radarMapContainer._leafletMap = map;
 
+    // Show warning if API key is not configured
+    if (!hasValidApiKey) {
+      const warning = document.createElement('div');
+      warning.className = 'radar-api-warning';
+      warning.innerHTML = `
+        <i class="fas fa-exclamation-triangle"></i>
+        <p><strong>Weather Radar Overlays Unavailable</strong></p>
+        <p>OpenWeatherMap's weather map tiles (precipitation, clouds, temperature overlays) require a <strong>paid subscription</strong>.</p>
+        <div style="text-align: left; margin: 15px auto; max-width: 450px; font-size: 0.9rem;">
+          <p><strong>Free Plan Limitations:</strong></p>
+          <ul style="margin: 5px 0; padding-left: 20px;">
+            <li>Weather map tiles: ❌ Not available</li>
+            <li>Current weather: ✅ Available (via Open-Meteo)</li>
+            <li>Basic forecasts: ✅ Available</li>
+          </ul>
+          <p style="margin-top: 10px;"><strong>Note:</strong> This app uses Open-Meteo for all weather data (free & unlimited). The radar feature requires OpenWeatherMap's paid API subscription ($40+/month).</p>
+          <p style="margin-top: 10px;">
+            <a href="https://openweathermap.org/price" target="_blank" class="text-decoration-none">
+              View OpenWeatherMap pricing <i class="fas fa-external-link-alt fa-xs"></i>
+            </a>
+          </p>
+        </div>
+      `;
+      radarContent.appendChild(warning);
+    }
+
     // Set up layer toggle event listeners
     const precipToggle = radarPane.querySelector('.radar-layer-precipitation');
     const cloudsToggle = radarPane.querySelector('.radar-layer-clouds');
     const tempToggle = radarPane.querySelector('.radar-layer-temperature');
 
-    precipToggle.addEventListener('change', e => {
-      if (e.target.checked) {
-        precipLayer.addTo(map);
-      } else {
-        map.removeLayer(precipLayer);
+    // If no valid API key, disable the toggles and uncheck them
+    if (!hasValidApiKey) {
+      if (precipToggle) {
+        precipToggle.disabled = true;
+        precipToggle.checked = false;
+        precipToggle.parentElement.style.opacity = '0.5';
       }
-    });
+      if (cloudsToggle) {
+        cloudsToggle.disabled = true;
+        cloudsToggle.checked = false;
+        cloudsToggle.parentElement.style.opacity = '0.5';
+      }
+      if (tempToggle) {
+        tempToggle.disabled = true;
+        tempToggle.checked = false;
+        tempToggle.parentElement.style.opacity = '0.5';
+      }
+    }
 
-    cloudsToggle.addEventListener('change', e => {
-      if (e.target.checked) {
-        cloudsLayer.addTo(map);
-      } else {
-        map.removeLayer(cloudsLayer);
-      }
-    });
+    if (precipToggle) {
+      precipToggle.addEventListener('change', e => {
+        if (precipLayer) {
+          if (e.target.checked) {
+            precipLayer.addTo(map);
+          } else {
+            map.removeLayer(precipLayer);
+          }
+        }
+      });
+    }
 
-    tempToggle.addEventListener('change', e => {
-      if (e.target.checked) {
-        tempLayer.addTo(map);
-      } else {
-        map.removeLayer(tempLayer);
-      }
-    });
+    if (cloudsToggle) {
+      cloudsToggle.addEventListener('change', e => {
+        if (cloudsLayer) {
+          if (e.target.checked) {
+            cloudsLayer.addTo(map);
+          } else {
+            map.removeLayer(cloudsLayer);
+          }
+        }
+      });
+    }
+
+    if (tempToggle) {
+      tempToggle.addEventListener('change', e => {
+        if (tempLayer) {
+          if (e.target.checked) {
+            tempLayer.addTo(map);
+          } else {
+            map.removeLayer(tempLayer);
+          }
+        }
+      });
+    }
 
     // Update UI
     radarLoading.style.display = 'none';
@@ -1505,9 +1584,12 @@ async function loadSettings() {
     const settings = await window.electron.readSettings();
     console.log('Settings loaded:', settings);
 
-    if (settings.isSearchBarHidden) {
-      searchBarContainer.classList.add('d-none');
+    // Handle search bar visibility - it starts hidden by default in HTML
+    if (settings.isSearchBarHidden === false) {
+      // If it should be visible, remove the d-none class
+      searchBarContainer.classList.remove('d-none');
     }
+    // If undefined or true, keep it hidden (d-none is already set in HTML)
 
     if (settings.temperatureUnit) {
       temperatureUnit = settings.temperatureUnit;
@@ -1550,11 +1632,42 @@ async function loadSettings() {
 
     // Start auto-refresh after loading settings
     startAutoRefresh();
+
+    // Hide loading spinner after everything is loaded
+    hideLoadingSpinner();
   } catch (error) {
     console.error('Error loading settings:', error);
     showToast('Failed to load saved settings', 'error');
+
+    // Hide loading spinner even if there's an error
+    hideLoadingSpinner();
   }
 }
+
+/**
+ * Hides the loading spinner with a smooth fade-out animation.
+ */
+function hideLoadingSpinner() {
+  const spinner = document.getElementById('app-loading-spinner');
+  if (spinner) {
+    spinner.classList.add('hidden');
+    // Remove from DOM after animation completes
+    setTimeout(() => {
+      spinner.remove();
+    }, 500);
+  }
+}
+
+// Debug: Catch unauthorized tile requests
+window.addEventListener('error', event => {
+  if (event.message && event.message.includes('401')) {
+    console.error('[Debug] 401 error detected:', {
+      message: event.message,
+      filename: event.filename,
+      stack: event.error ? event.error.stack : 'No stack trace',
+    });
+  }
+}, true);
 
 // Load settings when the app starts (skip in test environment)
 if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
@@ -1793,6 +1906,86 @@ function stopAutoRefresh() {
   }
 }
 
+// --- Masonry Layout Handler ---
+
+const columnGap = 12; // Reduced gap for better space usage
+const cardWidth = 320; // Smaller cards to fit more
+
+/**
+ * Applies masonry layout to the cities grid
+ */
+function applyMasonryLayout() {
+  const container = document.getElementById('cities');
+  const items = Array.from(container.querySelectorAll('.col'));
+
+  console.log(`[Masonry] Applying layout with ${items.length} items`);
+
+  if (items.length === 0) {
+    container.style.height = '0px';
+    console.log('[Masonry] No items to layout, setting height to 0');
+    return;
+  }
+
+  // Calculate number of columns based on container width
+  const containerWidth = container.offsetWidth;
+  const numColumns = Math.max(
+    1,
+    Math.floor((containerWidth + columnGap) / (cardWidth + columnGap))
+  );
+
+  console.log(`[Masonry] Container width: ${containerWidth}px, Columns: ${numColumns}`);
+
+  // Calculate total grid width
+  const gridWidth = numColumns * cardWidth + (numColumns - 1) * columnGap;
+
+  // Calculate left offset to center the grid
+  const leftOffset = Math.max(0, (containerWidth - gridWidth) / 2);
+
+  console.log(`[Masonry] Grid width: ${gridWidth}px, Left offset: ${leftOffset}px`);
+
+  // Create column height trackers
+  const columnHeights = new Array(numColumns).fill(0);
+
+  // Position each item
+  items.forEach((item, index) => {
+    // Ensure item is visible
+    item.style.opacity = '1';
+
+    // Find shortest column
+    const shortestColumn = columnHeights.indexOf(Math.min(...columnHeights));
+
+    // Calculate position with centering offset
+    const x = leftOffset + shortestColumn * (cardWidth + columnGap);
+    const y = columnHeights[shortestColumn];
+
+    // Apply position
+    item.style.position = 'absolute';
+    item.style.left = `${x}px`;
+    item.style.top = `${y}px`;
+    item.style.width = `${cardWidth}px`;
+    item.style.transition = 'top 0.3s ease, left 0.3s ease, opacity 0.3s ease';
+
+    if (index === 0) {
+      console.log(
+        `[Masonry] First card positioned at (${x}, ${y}), height: ${item.offsetHeight}px`
+      );
+    }
+
+    // Update column height
+    columnHeights[shortestColumn] += item.offsetHeight + columnGap;
+  });
+
+  // Set container height
+  const maxHeight = Math.max(...columnHeights);
+  container.style.height = `${maxHeight}px`;
+  container.style.position = 'relative';
+
+  console.log(
+    `[Masonry] Layout complete. Container height: ${maxHeight}px, Column heights:`,
+    columnHeights
+  );
+}
+
 // --- Event Listeners ---
 
 // Only set up event listeners if not in test environment
@@ -1992,6 +2185,13 @@ if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
         valueDisplay.textContent = `${autoRefreshMinutes} min`;
       }
 
+      // Load API keys
+      const apiKeys = settings.apiKeys || {};
+      const owmApiKeyInput = document.getElementById('openweathermap-api-key');
+      if (owmApiKeyInput && apiKeys.openweathermap) {
+        owmApiKeyInput.value = apiKeys.openweathermap;
+      }
+
       // Load theme and apply active state
       const theme = settings.theme || 'purple-blue';
       applyTheme(theme);
@@ -2107,6 +2307,184 @@ if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
     }
   }
 
+  /**
+   * Reloads all open radar tabs to apply new API key.
+   */
+  function reloadAllRadarTabs() {
+    const allCards = citiesContainer.querySelectorAll('.col');
+    let reloadCount = 0;
+
+    allCards.forEach(card => {
+      // Check if the radar tab is currently active
+      const radarPane = card.querySelector('[data-tab-pane="radar"]');
+      const isRadarActive = radarPane && radarPane.classList.contains('active');
+
+      if (isRadarActive) {
+        reloadCount++;
+        const cityName = card.getAttribute('data-city-name');
+        console.log(`Reloading radar for ${cityName}`);
+
+        // Get the radar content container
+        const radarContent = radarPane.querySelector('.radar-content');
+        const radarLoading = radarPane.querySelector('.radar-loading');
+        const radarMapContainer = radarContent ? radarContent.querySelector('.radar-map-container') : null;
+
+        // Clean up existing map if it exists
+        if (radarMapContainer && radarMapContainer._leafletMap) {
+          radarMapContainer._leafletMap.remove();
+          radarMapContainer._leafletMap = null;
+          radarMapContainer._precipLayer = null;
+          radarMapContainer._cloudsLayer = null;
+          radarMapContainer._tempLayer = null;
+        }
+
+        // Recreate the radar content HTML with a new map container ID
+        const mapId = `radar-map-${cityName.replace(/\s+/g, '-')}-${Date.now()}`;
+        if (radarContent) {
+          radarContent.innerHTML = `
+            <div id="${mapId}" class="radar-map-container"></div>
+            <div class="radar-controls">
+              <label class="radar-layer-toggle">
+                <input type="checkbox" class="radar-layer-precipitation" checked> Precipitation
+              </label>
+              <label class="radar-layer-toggle">
+                <input type="checkbox" class="radar-layer-clouds"> Clouds
+              </label>
+              <label class="radar-layer-toggle">
+                <input type="checkbox" class="radar-layer-temperature"> Temperature
+              </label>
+            </div>
+          `;
+          radarContent.style.display = 'none';
+        }
+
+        // Show loading state
+        if (radarLoading) {
+          radarLoading.style.display = 'block';
+        }
+
+        // Reload the radar map
+        loadRadarMap(card, cityName);
+      }
+    });
+
+    if (reloadCount === 0) {
+      console.log('No active radar tabs to reload. Open a Radar tab to see the changes.');
+    } else {
+      console.log(`Reloaded ${reloadCount} radar tab(s)`);
+    }
+  }
+
+  /**
+   * Saves OpenWeatherMap API key to settings.
+   */
+  async function saveOpenWeatherMapApiKey() {
+    const apiKeyInput = document.getElementById('openweathermap-api-key');
+    const statusDiv = document.getElementById('owm-api-key-status');
+    const apiKey = apiKeyInput.value.trim();
+
+    // Validate API key
+    if (!apiKey || apiKey.length === 0) {
+      statusDiv.innerHTML = '<small class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Please enter a valid API key</small>';
+      showToast('Please enter a valid API key', 'warning');
+      setTimeout(() => {
+        statusDiv.innerHTML = '';
+      }, 3000);
+      return;
+    }
+
+    try {
+      const settings = await window.electron.readSettings();
+
+      // Initialize apiKeys object if it doesn't exist
+      if (!settings.apiKeys) {
+        settings.apiKeys = {};
+      }
+
+      // Save the API key (only if not empty)
+      settings.apiKeys.openweathermap = apiKey;
+      await window.electron.writeSettings(settings);
+
+      console.log('OpenWeatherMap API key saved');
+
+      // Reload any open radar tabs to apply the new API key
+      reloadAllRadarTabs();
+
+      // Show success message with instructions
+      statusDiv.innerHTML = '<small class="text-success"><i class="fas fa-check-circle me-1"></i>API key saved! Radar maps will reload automatically.</small>';
+      showToast('OpenWeatherMap API key saved successfully', 'success', 3000);
+
+      // Clear status message after 5 seconds
+      setTimeout(() => {
+        statusDiv.innerHTML = '';
+      }, 5000);
+    } catch (error) {
+      console.error('Error saving OpenWeatherMap API key:', error);
+      statusDiv.innerHTML = '<small class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>Failed to save API key</small>';
+      showToast('Failed to save API key', 'error');
+    }
+  }
+
+  /**
+   * Clears OpenWeatherMap API key from settings.
+   */
+  async function clearOpenWeatherMapApiKey() {
+    const apiKeyInput = document.getElementById('openweathermap-api-key');
+    const statusDiv = document.getElementById('owm-api-key-status');
+
+    try {
+      const settings = await window.electron.readSettings();
+
+      // Initialize apiKeys object if it doesn't exist
+      if (!settings.apiKeys) {
+        settings.apiKeys = {};
+      }
+
+      // Clear the API key
+      settings.apiKeys.openweathermap = '';
+      await window.electron.writeSettings(settings);
+
+      // Clear the input field
+      apiKeyInput.value = '';
+
+      console.log('OpenWeatherMap API key cleared');
+
+      // Show success message
+      statusDiv.innerHTML = '<small class="text-success"><i class="fas fa-check-circle me-1"></i>API key cleared successfully!</small>';
+      showToast('OpenWeatherMap API key cleared', 'success', 2000);
+
+      // Clear status message after 3 seconds
+      setTimeout(() => {
+        statusDiv.innerHTML = '';
+      }, 3000);
+    } catch (error) {
+      console.error('Error clearing OpenWeatherMap API key:', error);
+      statusDiv.innerHTML = '<small class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>Failed to clear API key</small>';
+      showToast('Failed to clear API key', 'error');
+    }
+  }
+
+  /**
+   * Toggles visibility of OpenWeatherMap API key input.
+   */
+  function toggleOpenWeatherMapKeyVisibility() {
+    const apiKeyInput = document.getElementById('openweathermap-api-key');
+    const toggleBtn = document.getElementById('toggle-owm-key-visibility');
+    const icon = toggleBtn.querySelector('i');
+
+    if (apiKeyInput.type === 'password') {
+      apiKeyInput.type = 'text';
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
+      toggleBtn.title = 'Hide API key';
+    } else {
+      apiKeyInput.type = 'password';
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
+      toggleBtn.title = 'Show API key';
+    }
+  }
+
   // Settings page event listeners
   settingsBtn.addEventListener('click', () => {
     showSettingsPage();
@@ -2157,84 +2535,27 @@ if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
     });
   }
 
-  // --- Masonry Layout Handler ---
+  // API Keys event listeners
+  const saveOwmKeyBtn = document.getElementById('save-owm-api-key');
+  const clearOwmKeyBtn = document.getElementById('clear-owm-api-key');
+  const toggleOwmKeyBtn = document.getElementById('toggle-owm-key-visibility');
 
-  const columnGap = 12; // Reduced gap for better space usage
-  const cardWidth = 320; // Smaller cards to fit more
-
-  /**
-   * Applies masonry layout to the cities grid
-   */
-  function applyMasonryLayout() {
-    const container = document.getElementById('cities');
-    const items = Array.from(container.querySelectorAll('.col'));
-
-    console.log(`[Masonry] Applying layout with ${items.length} items`);
-
-    if (items.length === 0) {
-      container.style.height = '0px';
-      console.log('[Masonry] No items to layout, setting height to 0');
-      return;
-    }
-
-    // Calculate number of columns based on container width
-    const containerWidth = container.offsetWidth;
-    const numColumns = Math.max(
-      1,
-      Math.floor((containerWidth + columnGap) / (cardWidth + columnGap))
-    );
-
-    console.log(`[Masonry] Container width: ${containerWidth}px, Columns: ${numColumns}`);
-
-    // Calculate total grid width
-    const gridWidth = numColumns * cardWidth + (numColumns - 1) * columnGap;
-
-    // Calculate left offset to center the grid
-    const leftOffset = Math.max(0, (containerWidth - gridWidth) / 2);
-
-    console.log(`[Masonry] Grid width: ${gridWidth}px, Left offset: ${leftOffset}px`);
-
-    // Create column height trackers
-    const columnHeights = new Array(numColumns).fill(0);
-
-    // Position each item
-    items.forEach((item, index) => {
-      // Ensure item is visible
-      item.style.opacity = '1';
-
-      // Find shortest column
-      const shortestColumn = columnHeights.indexOf(Math.min(...columnHeights));
-
-      // Calculate position with centering offset
-      const x = leftOffset + shortestColumn * (cardWidth + columnGap);
-      const y = columnHeights[shortestColumn];
-
-      // Apply position
-      item.style.position = 'absolute';
-      item.style.left = `${x}px`;
-      item.style.top = `${y}px`;
-      item.style.width = `${cardWidth}px`;
-      item.style.transition = 'top 0.3s ease, left 0.3s ease, opacity 0.3s ease';
-
-      if (index === 0) {
-        console.log(
-          `[Masonry] First card positioned at (${x}, ${y}), height: ${item.offsetHeight}px`
-        );
-      }
-
-      // Update column height
-      columnHeights[shortestColumn] += item.offsetHeight + columnGap;
+  if (saveOwmKeyBtn) {
+    saveOwmKeyBtn.addEventListener('click', async () => {
+      await saveOpenWeatherMapApiKey();
     });
+  }
 
-    // Set container height
-    const maxHeight = Math.max(...columnHeights);
-    container.style.height = `${maxHeight}px`;
-    container.style.position = 'relative';
+  if (clearOwmKeyBtn) {
+    clearOwmKeyBtn.addEventListener('click', async () => {
+      await clearOpenWeatherMapApiKey();
+    });
+  }
 
-    console.log(
-      `[Masonry] Layout complete. Container height: ${maxHeight}px, Column heights:`,
-      columnHeights
-    );
+  if (toggleOwmKeyBtn) {
+    toggleOwmKeyBtn.addEventListener('click', () => {
+      toggleOpenWeatherMapKeyVisibility();
+    });
   }
 
   // Apply masonry when window loads (after all content is loaded)

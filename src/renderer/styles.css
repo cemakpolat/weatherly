@@ -2209,3 +2209,202 @@ body.compact-view .col.expanded .card {
     font-size: 1rem;
   }
 }
+
+/* =====================================================
+   App Loading Spinner Styles
+   ===================================================== */
+
+.app-loading-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.app-loading-container.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loading-content {
+  text-align: center;
+  color: #fff;
+}
+
+.spinner-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loading-icon {
+  color: #fff;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+.loading-text {
+  font-size: 1.2rem;
+  font-weight: 300;
+  letter-spacing: 1px;
+  animation: fadeInOut 2s ease-in-out infinite;
+}
+
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+  border-width: 0.3rem;
+}
+
+/* =====================================================
+   API Keys Section Styles
+   ===================================================== */
+
+/* API key input styling */
+#openweathermap-api-key {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+}
+
+/* API key status messages */
+#owm-api-key-status {
+  min-height: 20px;
+  transition: opacity 0.3s ease;
+}
+
+/* Radar API warning box */
+.radar-api-warning {
+  background: rgba(255, 193, 7, 0.15);
+  border: 2px solid rgba(255, 193, 7, 0.5);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: center;
+  color: #fff;
+}
+
+.radar-api-warning i.fa-exclamation-triangle {
+  font-size: 3rem;
+  color: #ffc107;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.radar-api-warning p {
+  margin: 10px 0;
+  font-size: 0.95rem;
+}
+
+.radar-api-warning ol {
+  font-size: 0.9rem;
+  line-height: 1.8;
+  padding-left: 20px;
+}
+
+.radar-api-warning a {
+  color: #ffc107;
+  font-weight: 600;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.radar-api-warning a:hover {
+  color: #ffdb4d;
+}
+
+/* Alert styling for info box */
+.alert-sm {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 0.5rem;
+}
+
+.alert-info {
+  background-color: rgba(13, 202, 240, 0.15);
+  border: 1px solid rgba(13, 202, 240, 0.3);
+  color: #cfe2ff;
+}
+
+/* Settings option improvements for API keys */
+.settings-option .form-control {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.settings-option .form-control:focus {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.settings-option .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Button styling for API key actions */
+.settings-option .btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.settings-option .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.settings-option .btn-outline-danger {
+  border-color: rgba(220, 53, 69, 0.5);
+  color: #dc3545;
+  transition: all 0.2s ease;
+}
+
+.settings-option .btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.settings-option .btn-outline-secondary {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.2s ease;
+}
+
+.settings-option .btn-outline-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
