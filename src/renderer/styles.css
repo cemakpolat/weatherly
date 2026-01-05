@@ -2225,7 +2225,9 @@ body.compact-view .col.expanded .card {
   align-items: center;
   justify-content: center;
   z-index: 10000;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
+  transition:
+    opacity 0.5s ease,
+    visibility 0.5s ease;
 }
 
 .app-loading-container.hidden {
@@ -2252,7 +2254,8 @@ body.compact-view .col.expanded .card {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -2270,7 +2273,8 @@ body.compact-view .col.expanded .card {
 }
 
 @keyframes fadeInOut {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.6;
   }
   50% {
@@ -2376,7 +2380,9 @@ body.compact-view .col.expanded .card {
 .settings-option .btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border: none;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .settings-option .btn-primary:hover {

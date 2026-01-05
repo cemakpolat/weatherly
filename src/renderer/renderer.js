@@ -1660,15 +1660,19 @@ function hideLoadingSpinner() {
 }
 
 // Debug: Catch unauthorized tile requests
-window.addEventListener('error', event => {
-  if (event.message && event.message.includes('401')) {
-    console.error('[Debug] 401 error detected:', {
-      message: event.message,
-      filename: event.filename,
-      stack: event.error ? event.error.stack : 'No stack trace',
-    });
-  }
-}, true);
+window.addEventListener(
+  'error',
+  event => {
+    if (event.message && event.message.includes('401')) {
+      console.error('[Debug] 401 error detected:', {
+        message: event.message,
+        filename: event.filename,
+        stack: event.error ? event.error.stack : 'No stack trace',
+      });
+    }
+  },
+  true
+);
 
 // Load settings when the app starts (skip in test environment)
 if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
@@ -2329,7 +2333,9 @@ if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
         // Get the radar content container
         const radarContent = radarPane.querySelector('.radar-content');
         const radarLoading = radarPane.querySelector('.radar-loading');
-        const radarMapContainer = radarContent ? radarContent.querySelector('.radar-map-container') : null;
+        const radarMapContainer = radarContent
+          ? radarContent.querySelector('.radar-map-container')
+          : null;
 
         // Clean up existing map if it exists
         if (radarMapContainer && radarMapContainer._leafletMap) {
@@ -2387,7 +2393,8 @@ if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
 
     // Validate API key
     if (!apiKey || apiKey.length === 0) {
-      statusDiv.innerHTML = '<small class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Please enter a valid API key</small>';
+      statusDiv.innerHTML =
+        '<small class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Please enter a valid API key</small>';
       showToast('Please enter a valid API key', 'warning');
       setTimeout(() => {
         statusDiv.innerHTML = '';
@@ -2413,7 +2420,8 @@ if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
       reloadAllRadarTabs();
 
       // Show success message with instructions
-      statusDiv.innerHTML = '<small class="text-success"><i class="fas fa-check-circle me-1"></i>API key saved! Radar maps will reload automatically.</small>';
+      statusDiv.innerHTML =
+        '<small class="text-success"><i class="fas fa-check-circle me-1"></i>API key saved! Radar maps will reload automatically.</small>';
       showToast('OpenWeatherMap API key saved successfully', 'success', 3000);
 
       // Clear status message after 5 seconds
@@ -2422,7 +2430,8 @@ if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
       }, 5000);
     } catch (error) {
       console.error('Error saving OpenWeatherMap API key:', error);
-      statusDiv.innerHTML = '<small class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>Failed to save API key</small>';
+      statusDiv.innerHTML =
+        '<small class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>Failed to save API key</small>';
       showToast('Failed to save API key', 'error');
     }
   }
@@ -2452,7 +2461,8 @@ if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
       console.log('OpenWeatherMap API key cleared');
 
       // Show success message
-      statusDiv.innerHTML = '<small class="text-success"><i class="fas fa-check-circle me-1"></i>API key cleared successfully!</small>';
+      statusDiv.innerHTML =
+        '<small class="text-success"><i class="fas fa-check-circle me-1"></i>API key cleared successfully!</small>';
       showToast('OpenWeatherMap API key cleared', 'success', 2000);
 
       // Clear status message after 3 seconds
@@ -2461,7 +2471,8 @@ if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
       }, 3000);
     } catch (error) {
       console.error('Error clearing OpenWeatherMap API key:', error);
-      statusDiv.innerHTML = '<small class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>Failed to clear API key</small>';
+      statusDiv.innerHTML =
+        '<small class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>Failed to clear API key</small>';
       showToast('Failed to clear API key', 'error');
     }
   }
