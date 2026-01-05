@@ -1,3 +1,4 @@
+/* global process */
 // --- Module Imports ---
 import {
   CITIES_JSON_URL,
@@ -1989,6 +1990,7 @@ function applyMasonryLayout() {
 // --- Event Listeners ---
 
 // Only set up event listeners if not in test environment
+/* eslint-disable no-inner-declarations */
 if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
   searchButton.addEventListener('click', handleSearch);
 
@@ -2634,3 +2636,4 @@ if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
     });
   });
 }
+/* eslint-enable no-inner-declarations */
