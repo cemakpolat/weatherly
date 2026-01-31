@@ -1,24 +1,48 @@
-# atmos sphere Architecture - SOLID Principles
+# Atmos Sphere Architecture - SOLID & Modular Design
 
-This document explains the SOLID architecture implemented in the atmos sphere application.
+This document explains the SOLID architecture and modular design implemented in the Atmos Sphere application.
 
 ## Overview
 
-The application has been refactored to follow **SOLID principles**, making it easy to:
-- ✅ Add new weather API providers
-- ✅ Switch between providers at runtime
-- ✅ Test components independently
-- ✅ Maintain and extend functionality
+The application has been refactored to follow **SOLID principles** and a **modular architecture**, making it:
+- ✅ Easy to maintain and extend
+- ✅ Testable with isolated components
+- ✅ Scalable for new features
+- ✅ Well-organized with clear separation of concerns
+
+## Code Reduction Achievement
+
+| File | Before | After | Reduction |
+|------|--------|-------|-----------|
+| `renderer.js` | 2,651 lines | ~450 lines | **83%** |
+
+The functionality has been distributed across specialized services, each averaging 100-200 lines.
 
 ## SOLID Principles Applied
 
 ### 1. Single Responsibility Principle (SRP)
-Each class has one, and only one, reason to change.
+Each class/service has one, and only one, reason to change.
 
-- **`OpenMeteoProvider`** - Only handles Open-Meteo API integration
-- **`WeatherService`** - Only manages weather operations
-- **`GeolocationService`** - Only handles location detection
-- **`ConfigService`** - Only manages configuration
+| Service | Responsibility |
+|---------|----------------|
+| `StorageService` | Session storage operations |
+| `ToastService` | Toast notification display |
+| `SettingsManager` | Application settings management |
+| `TemperatureService` | Temperature conversion and formatting |
+| `CardManager` | City card creation and management |
+| `SearchManager` | Search and autocomplete functionality |
+| `ChartService` | Chart rendering and data visualization |
+| `RadarService` | Radar map initialization and control |
+| `HistoryService` | Historical weather data |
+| `ForecastService` | Forecast data formatting |
+| `ThemeManager` | Theme management |
+| `MasonryLayoutManager` | Masonry grid layout |
+| `DragDropManager` | Drag and drop operations |
+| `GeolocationManager` | User location detection |
+| `AutoRefreshManager` | Automatic data refresh |
+| `WeatherAlertService` | Weather alert detection and notification |
+| `OpenMeteoProvider` | Open-Meteo API integration |
+| `WeatherService` | Weather operations facade |
 
 ### 2. Open/Closed Principle (OCP)
 Software entities should be open for extension, but closed for modification.
