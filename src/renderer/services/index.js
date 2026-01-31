@@ -13,7 +13,8 @@ export { SettingsManager } from './SettingsManager.js';
 export { TemperatureService } from './TemperatureService.js';
 
 // Weather Services
-export { WeatherService, WeatherProviderType } from './WeatherService.js';
+export { WeatherService } from './WeatherService.js';
+export { WeatherProviderType } from './WeatherProviderFactory.js';
 export { WeatherAlertService } from './WeatherAlertService.js';
 export { ForecastService } from './ForecastService.js';
 export { HistoryService } from './HistoryService.js';
