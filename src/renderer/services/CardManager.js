@@ -88,6 +88,16 @@ export class CardManager {
     const uvRec = getUVRecommendation(uvIndex);
     const sunrise = weather.daily.sunrise?.[0];
     const sunset = weather.daily.sunset?.[0];
+    const visibility = weather.hourly.visibility?.[currentHourIndex];
+    const cloudCover = weather.hourly.cloudcover?.[currentHourIndex];
+    const precipitation = weather.hourly.precipitation?.[currentHourIndex] || 0;
+    const precipProb = weather.hourly.precipitation_probability?.[currentHourIndex] || 0;
+    
+    // Air quality data (if available)
+    const airQuality = weather.airQuality?.hourly;
+    const aqi = airQuality?.european_aqi?.[currentHourIndex];
+    const pm25 = airQuality?.pm2_5?.[currentHourIndex];
+    const pm10 = airQuality?.pm10?.[currentHourIndex];
 
     const card = document.createElement('div');
     card.className = 'col';
@@ -112,6 +122,13 @@ export class CardManager {
       uvRec,
       sunrise,
       sunset,
+      visibility,
+      cloudCover,
+      precipitation,
+      precipProb,
+      aqi,
+      pm25,
+      pm10,
       weather,
       alertBadge,
       locationBadge,
@@ -149,6 +166,13 @@ export class CardManager {
       uvRec,
       sunrise,
       sunset,
+      visibility,
+      cloudCover,
+      precipitation,
+      precipProb,
+      aqi,
+      pm25,
+      pm10,
       weather,
       alertBadge,
       locationBadge,
@@ -240,10 +264,39 @@ export class CardManager {
                   <span class="detail-value">${windSpeed !== undefined ? `${TemperatureService.formatWindSpeed(windSpeed)} ${formatWindDirection(windDirection)}` : 'N/A'}</span>
                 </div>
                 <div class="weather-detail">
+                  <i class="fas fa-droplet"></i>
+                  <span class="detail-label">Precipitation</span>
+                  <span class="detail-value">${precipitation > 0 ? `${precipitation.toFixed(1)} mm` : 'None'} ${precipProb > 0 ? `(${Math.round(precipProb)}%)` : ''}</span>
+                </div>
+                <div class="weather-detail">
+                  <i class="fas fa-cloud"></i>
+                  <span class="detail-label">Cloud Cover</span>
+                  <span class="detail-value">${cloudCover !== undefined ? `${Math.round(cloudCover)}%` : 'N/A'}</span>
+                </div>
+                <div class="weather-detail">
+                  <i class="fas fa-eye"></i>
+                  <span class="detail-label">Visibility</span>
+                  <span class="detail-value">${visibility !== undefined ? `${(visibility / 1000).toFixed(1)} km` : 'N/A'}</span>
+                </div>
+                <div class="weather-detail">
                   <i class="fas fa-sun"></i>
                   <span class="detail-label">UV Index</span>
                   <span class="detail-value ${uvRec.class}">${uvIndex} (${uvRec.text})</span>
                 </div>
+                ${aqi !== undefined ? `
+                <div class="weather-detail">
+                  <i class="fas fa-smog"></i>
+                  <span class="detail-label">Air Quality</span>
+                  <span class="detail-value aqi-${CardManager.#getAQIClass(aqi)}">${Math.round(aqi)} - ${CardManager.#getAQIDescription(aqi)}</span>
+                </div>
+                ` : ''}
+                ${pm25 !== undefined ? `
+                <div class="weather-detail">
+                  <i class="fas fa-lungs"></i>
+                  <span class="detail-label">PM2.5</span>
+                  <span class="detail-value">${pm25.toFixed(1)} μg/m³</span>
+                </div>
+                ` : ''}
                 <div class="weather-detail">
                   <i class="fas fa-sunrise"></i>
                   <span class="detail-label">Sunrise</span>
@@ -636,6 +689,36 @@ export class CardManager {
         }
       }
     });
+  }
+
+  /**
+   * Gets AQI class for styling.
+   * @private
+   * @param {number} aqi - The AQI value (European scale).
+   * @returns {string} - CSS class name.
+   */
+  static #getAQIClass(aqi) {
+    if (aqi <= 20) return 'good';
+    if (aqi <= 40) return 'fair';
+    if (aqi <= 60) return 'moderate';
+    if (aqi <= 80) return 'poor';
+    if (aqi <= 100) return 'very-poor';
+    return 'hazardous';
+  }
+
+  /**
+   * Gets AQI description.
+   * @private
+   * @param {number} aqi - The AQI value (European scale).
+   * @returns {string} - Description text.
+   */
+  static #getAQIDescription(aqi) {
+    if (aqi <= 20) return 'Good';
+    if (aqi <= 40) return 'Fair';
+    if (aqi <= 60) return 'Moderate';
+    if (aqi <= 80) return 'Poor';
+    if (aqi <= 100) return 'Very Poor';
+    return 'Hazardous';
   }
 
   /**

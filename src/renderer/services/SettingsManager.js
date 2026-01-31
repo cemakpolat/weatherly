@@ -21,6 +21,7 @@ export class SettingsManager {
       isCompactView: false,
       cities: [],
       theme: 'purple-blue',
+      themeMode: 'dark',
       autoRefreshInterval: 5,
       animationPreferences: {
         enabled: true,
@@ -171,6 +172,22 @@ export class SettingsManager {
    */
   static async setTheme(theme) {
     return SettingsManager.set('theme', theme);
+  }
+
+  /**
+   * Gets the theme mode setting (light or dark).
+   * @returns {Promise<string>} - 'light' or 'dark'.
+   */
+  static async getThemeMode() {
+    return SettingsManager.get('themeMode', 'dark');
+  }
+
+  /**
+   * Sets the theme mode setting.
+   * @param {string} mode - 'light' or 'dark'.
+   */
+  static async setThemeMode(mode) {
+    return SettingsManager.set('themeMode', mode);
   }
 
   /**

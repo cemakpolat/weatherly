@@ -416,6 +416,12 @@ function setupEventListeners() {
   // Temperature unit toggle
   document.getElementById('temp-unit-toggle').addEventListener('click', toggleTemperatureUnit);
 
+  // Theme mode toggle
+  const themeModeToggle = document.getElementById('theme-mode-toggle');
+  if (themeModeToggle) {
+    themeModeToggle.addEventListener('click', () => ThemeManager.toggleMode());
+  }
+
   // Compact view toggle
   document.getElementById('compact-view-toggle').addEventListener('click', toggleCompactView);
 

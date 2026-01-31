@@ -1,7 +1,7 @@
 /**
  * ThemeManager - Single Responsibility: Handle theme management
  * 
- * This service manages application theming including applying and saving themes.
+ * This service manages application theming including dark/light modes and color themes.
  * It follows the Single Responsibility Principle by focusing solely on
  * theme-related operations.
  */
@@ -10,6 +10,7 @@ import { ToastService } from './ToastService.js';
 
 export class ThemeManager {
   static #currentTheme = 'purple-blue';
+  static #currentMode = 'dark'; // 'light' or 'dark'
 
   /**
    * Available themes.
@@ -34,15 +35,26 @@ export class ThemeManager {
   }
 
   /**
-   * Loads and applies the saved theme.
+   * Gets the current mode.
+   * @returns {string} - Current mode ('light' or 'dark').
+   */
+  static get currentMode() {
+    return ThemeManager.#currentMode;
+  }
+
+  /**
+   * Loads and applies the saved theme and mode.
    */
   static async loadAndApply() {
     try {
       const theme = await SettingsManager.getTheme();
+      const mode = await SettingsManager.getThemeMode();
       ThemeManager.apply(theme || 'purple-blue');
+      ThemeManager.applyMode(mode || 'dark');
     } catch (error) {
       console.error('Error loading theme:', error);
       ThemeManager.apply('purple-blue');
+      ThemeManager.applyMode('dark');
     }
   }
 
@@ -63,6 +75,56 @@ export class ThemeManager {
     ThemeManager.#updateThemeGrid(themeName);
 
     console.log('Theme applied:', themeName);
+  }
+
+  /**
+   * Applies a mode (light/dark) to the document.
+   * @param {string} mode - The mode to apply ('light' or 'dark').
+   */
+  static applyMode(mode) {
+    if (mode !== 'light' && mode !== 'dark') {
+      console.warn(`Unknown mode: ${mode}. Using dark.`);
+      mode = 'dark';
+    }
+
+    ThemeManager.#currentMode = mode;
+    document.body.setAttribute('data-mode', mode);
+
+    // Update theme toggle button if it exists
+    ThemeManager.#updateModeToggleButton(mode);
+
+    console.log('Theme mode applied:', mode);
+  }
+
+  /**
+   * Toggles between light and dark modes.
+   */
+  static async toggleMode() {
+    const newMode = ThemeManager.#currentMode === 'dark' ? 'light' : 'dark';
+    ThemeManager.applyMode(newMode);
+    
+    try {
+      await SettingsManager.setThemeMode(newMode);
+      ToastService.success(`${newMode === 'dark' ? 'Dark' : 'Light'} mode enabled`, 2000);
+    } catch (error) {
+      console.error('Error saving theme mode:', error);
+      ToastService.error('Failed to save theme mode');
+    }
+  }
+
+  /**
+   * Updates the mode toggle button icon.
+   * @private
+   */
+  static #updateModeToggleButton(mode) {
+    const toggleBtn = document.getElementById('theme-mode-toggle');
+    if (toggleBtn) {
+      const icon = toggleBtn.querySelector('i');
+      if (icon) {
+        icon.className = mode === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+      }
+      toggleBtn.title = mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    }
   }
 
   /**
@@ -96,9 +158,8 @@ export class ThemeManager {
       ToastService.error('Failed to save theme');
     }
   }
-
-  /**
-   * Sets up theme option click handlers.
+  /** 
+  * Sets up theme option click handlers.
    */
   static setupThemeOptions() {
     const themeOptions = document.querySelectorAll('.theme-option');

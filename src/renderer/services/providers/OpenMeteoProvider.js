@@ -79,14 +79,24 @@ export class OpenMeteoProvider extends IWeatherProvider {
         longitude: longitude.toString(),
         current_weather: 'true',
         hourly:
-          'temperature_2m,weathercode,relative_humidity_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,uv_index',
+          'temperature_2m,weathercode,relative_humidity_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,uv_index,precipitation,precipitation_probability,visibility,cloudcover',
         daily:
-          'temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,precipitation_probability_max,sunrise,sunset,uv_index_max',
+          'temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,precipitation_probability_max,sunrise,sunset,uv_index_max,wind_speed_10m_max,wind_gusts_10m_max',
         timezone: 'auto',
       });
 
       const url = `${OPENMETEO_WEATHER_URL}?${params.toString()}`;
       const data = await this._fetchJson(url);
+
+      // Try to fetch air quality data
+      try {
+        const aqUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&hourly=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,ozone,european_aqi&timezone=auto`;
+        const aqData = await this._fetchJson(aqUrl);
+        data.airQuality = aqData;
+      } catch (aqError) {
+        console.warn(`[${this.getProviderName()}] Air quality data unavailable:`, aqError);
+        data.airQuality = null;
+      }
 
       return data;
     } catch (error) {
