@@ -28,6 +28,7 @@ import {
   DragDropManager,
   GeolocationManager,
   AutoRefreshManager,
+  DynamicBackgroundManager,
   fetchJson,
   fetchWeather,
   fetchWeatherData,
@@ -60,6 +61,7 @@ function initializeServices() {
   MasonryLayoutManager.initialize('cities');
   DragDropManager.initialize(citiesContainer, debouncedSaveSettings);
   CardManager.initialize(citiesContainer, debouncedSaveSettings);
+  DynamicBackgroundManager.initialize();
 
   // Initialize search with callback
   SearchManager.initialize(citySearch, autocompleteDropdown, handleCitySearch);
@@ -93,6 +95,11 @@ async function handleCitySearch(cityName) {
       CardManager.addCard(card, true);
       SearchManager.clearInput();
       debouncedSaveSettings();
+
+      // Update dynamic background if enabled
+      if (DynamicBackgroundManager.isEnabled()) {
+        DynamicBackgroundManager.update(citiesContainer);
+      }
 
       ToastService.success(`${cityName} added successfully`);
       await WeatherAlertService.checkAndShowAlerts(cityData.weather, cityData.name);
@@ -143,6 +150,11 @@ async function handleGeolocate() {
       const card = CardManager.createCard(cityData);
       CardManager.addCard(card, true);
       debouncedSaveSettings();
+
+      // Update dynamic background if enabled
+      if (DynamicBackgroundManager.isEnabled()) {
+        DynamicBackgroundManager.update(citiesContainer);
+      }
 
       ToastService.success(`Added your current location: ${cityInfo.name}, ${cityInfo.country_code}`);
       await WeatherAlertService.checkAndShowAlerts(weatherData, cityInfo.name);
@@ -238,6 +250,14 @@ async function loadSettings() {
     console.log('All cities loaded, applying masonry layout...');
     MasonryLayoutManager.scheduleUpdate(200);
     AutoRefreshManager.start();
+    
+    // Update dynamic background if enabled
+    if (DynamicBackgroundManager.isEnabled()) {
+      setTimeout(() => {
+        DynamicBackgroundManager.update(citiesContainer);
+      }, 500);
+    }
+    
     hideLoadingSpinner();
   } catch (error) {
     console.error('Error loading settings:', error);
@@ -356,6 +376,18 @@ async function loadSettingsUI() {
     const animationPrefs = settings.animationPreferences || { enabled: true };
     globalAnimToggle.checked = animationPrefs.enabled;
 
+    // Dynamic backgrounds
+    const dynamicBgToggle = document.getElementById('dynamic-backgrounds-toggle');
+    const dynamicBgPrefs = settings.dynamicBackgrounds || { enabled: false };
+    if (dynamicBgToggle) {
+      dynamicBgToggle.checked = dynamicBgPrefs.enabled;
+      
+      // Apply current state
+      if (dynamicBgPrefs.enabled) {
+        DynamicBackgroundManager.enable();
+      }
+    }
+
     // Weather alerts
     const alertPrefs = await WeatherAlertService.getPreferences();
     document.getElementById('alerts-enabled').checked = alertPrefs.enabled;
@@ -467,6 +499,25 @@ function setupSettingsEventListeners() {
     ToastService.success('Animation settings saved', 2000);
   });
 
+  // Dynamic backgrounds toggle
+  const dynamicBgToggle = document.getElementById('dynamic-backgrounds-toggle');
+  if (dynamicBgToggle) {
+    dynamicBgToggle.addEventListener('change', async () => {
+      const enabled = dynamicBgToggle.checked;
+      await SettingsManager.setDynamicBackgrounds({ enabled });
+      
+      if (enabled) {
+        DynamicBackgroundManager.enable();
+        ToastService.success('Dynamic backgrounds enabled', 2000);
+      } else {
+        DynamicBackgroundManager.disable();
+        DynamicBackgroundManager.reset();
+        ThemeManager.loadAndApply();
+        ToastService.success('Dynamic backgrounds disabled', 2000);
+      }
+    });
+  }
+
   // Weather alerts toggles
   document.getElementById('alerts-enabled').addEventListener('change', saveAlertPreferences);
   ['alert-thunderstorm', 'alert-heavy-rain', 'alert-heavy-snow', 'alert-extreme-temp', 'alert-high-precip'].forEach(id => {
@@ -499,6 +550,27 @@ function setupSettingsEventListeners() {
   const toggleOwmKeyBtn = document.getElementById('toggle-owm-key-visibility');
   if (toggleOwmKeyBtn) {
     toggleOwmKeyBtn.addEventListener('click', toggleApiKeyVisibility);
+  }
+
+  // Data management buttons
+  const exportBtn = document.getElementById('export-settings-btn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', exportSettings);
+  }
+
+  const importBtn = document.getElementById('import-settings-btn');
+  if (importBtn) {
+    importBtn.addEventListener('click', triggerImportSettings);
+  }
+
+  const importFileInput = document.getElementById('import-settings-file');
+  if (importFileInput) {
+    importFileInput.addEventListener('change', importSettings);
+  }
+
+  const resetBtn = document.getElementById('reset-settings-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', resetSettings);
   }
 
   // Theme options
@@ -586,6 +658,72 @@ function toggleApiKeyVisibility() {
 }
 
 /**
+ * Exports settings to a JSON file.
+ */
+async function exportSettings() {
+  try {
+    await SettingsManager.exportSettings();
+    ToastService.success('Settings exported successfully!', 3000);
+  } catch (error) {
+    console.error('Error exporting settings:', error);
+    ToastService.error('Failed to export settings');
+  }
+}
+
+/**
+ * Triggers file input for importing settings.
+ */
+function triggerImportSettings() {
+  const fileInput = document.getElementById('import-settings-file');
+  fileInput.click();
+}
+
+/**
+ * Imports settings from a JSON file.
+ */
+async function importSettings(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  try {
+    await SettingsManager.importSettings(file);
+    ToastService.success('Settings imported successfully! Reloading...', 2000);
+    
+    // Reload the app to apply new settings
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
+  } catch (error) {
+    console.error('Error importing settings:', error);
+    ToastService.error('Failed to import settings. Please check the file format.');
+  }
+}
+
+/**
+ * Resets settings to defaults.
+ */
+async function resetSettings() {
+  const confirmed = confirm(
+    'Are you sure you want to reset all settings to defaults? This will remove all saved cities and preferences.'
+  );
+  
+  if (!confirmed) return;
+
+  try {
+    await SettingsManager.resetToDefaults();
+    ToastService.success('Settings reset to defaults! Reloading...', 2000);
+    
+    // Reload the app
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
+  } catch (error) {
+    console.error('Error resetting settings:', error);
+    ToastService.error('Failed to reset settings');
+  }
+}
+
+/**
  * Sets up keyboard shortcuts.
  */
 function setupKeyboardShortcuts() {
@@ -598,12 +736,14 @@ function setupKeyboardShortcuts() {
       e.preventDefault();
       searchBarContainer.classList.remove('d-none');
       SearchManager.focus();
+      ToastService.info('Search activated', 1500);
     }
 
     // Ctrl/Cmd + R - Refresh all
     if (modifier && e.key.toLowerCase() === 'r') {
       e.preventDefault();
       AutoRefreshManager.triggerRefresh();
+      ToastService.info('Refreshing weather data...', 2000);
     }
 
     // Ctrl/Cmd + N - New city
@@ -611,12 +751,48 @@ function setupKeyboardShortcuts() {
       e.preventDefault();
       searchBarContainer.classList.remove('d-none');
       SearchManager.focus();
+      ToastService.info('Add new city', 1500);
     }
 
-    // Escape - Close search/autocomplete
+    // Ctrl/Cmd + , - Open settings (common on Mac)
+    if (modifier && e.key === ',') {
+      e.preventDefault();
+      showSettingsPage();
+    }
+
+    // Ctrl/Cmd + T - Toggle theme mode (dark/light)
+    if (modifier && e.key.toLowerCase() === 't') {
+      e.preventDefault();
+      ThemeManager.toggleMode();
+      ToastService.info('Theme toggled', 1500);
+    }
+
+    // Ctrl/Cmd + E - Export settings
+    if (modifier && e.key.toLowerCase() === 'e') {
+      e.preventDefault();
+      exportSettings();
+    }
+
+    // Ctrl/Cmd + L - Toggle compact/grid view
+    if (modifier && e.key.toLowerCase() === 'l') {
+      e.preventDefault();
+      toggleCompactView();
+    }
+
+    // Ctrl/Cmd + G - Geolocate
+    if (modifier && e.key.toLowerCase() === 'g') {
+      e.preventDefault();
+      geolocateButton.click();
+    }
+
+    // Escape - Close search/autocomplete or settings
     if (e.key === 'Escape') {
       if (autocompleteDropdown.style.display === 'block') {
         autocompleteDropdown.style.display = 'none';
+      } else if (!document.getElementById('settings-page').classList.contains('d-none')) {
+        showMainPage();
+      } else if (!searchBarContainer.classList.contains('d-none')) {
+        searchBarContainer.classList.add('d-none');
       }
     }
   });

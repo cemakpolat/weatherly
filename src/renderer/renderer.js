@@ -39,14 +39,32 @@ import { WeatherAnimationManager } from './services/animations/WeatherAnimationM
 // Access it via window.L
 
 // --- DOM Elements ---
-const citiesContainer = document.getElementById('cities');
-const citySearch = document.getElementById('citySearch');
-const searchButton = document.getElementById('searchButton');
-const geolocateButton = document.getElementById('geolocateButton');
-const autocompleteDropdown = document.getElementById('autocompleteDropdown');
-const searchToggleBtn = document.getElementById('search-toggle-btn');
-const searchBarContainer = document.getElementById('search-bar-container');
-const scrollableContainer = document.getElementById('scrollable-container');
+// Lazily resolve DOM elements via proxies so tests can set up JSDOM in beforeEach
+function createLazyElement(id) {
+  return new Proxy({}, {
+    get(_, prop) {
+      const el = typeof document !== 'undefined' ? document.getElementById(id) : null;
+      if (!el) return undefined;
+      const val = el[prop];
+      return typeof val === 'function' ? val.bind(el) : val;
+    },
+    set(_, prop, value) {
+      const el = typeof document !== 'undefined' ? document.getElementById(id) : null;
+      if (!el) return true;
+      el[prop] = value;
+      return true;
+    },
+  });
+}
+
+const citiesContainer = createLazyElement('cities');
+const citySearch = createLazyElement('citySearch');
+const searchButton = createLazyElement('searchButton');
+const geolocateButton = createLazyElement('geolocateButton');
+const autocompleteDropdown = createLazyElement('autocompleteDropdown');
+const searchToggleBtn = createLazyElement('search-toggle-btn');
+const searchBarContainer = createLazyElement('search-bar-container');
+const scrollableContainer = createLazyElement('scrollable-container');
 
 // --- State Variables ---
 let selectedIndex = -1; // Track the selected suggestion index
@@ -54,6 +72,33 @@ let lastSearchTerm = ''; // Track the last search term to prevent duplicates
 let temperatureUnit = 'celsius'; // Track temperature unit (celsius or fahrenheit)
 let autoRefreshInterval = null; // Store the auto-refresh interval ID
 let saveSettingsTimeout = null; // Debounce timeout for saveSettings
+
+// Sync certain state vars with the global/window object so tests can read/write them
+if (typeof globalThis !== 'undefined') {
+  try {
+    Object.defineProperty(globalThis, 'lastSearchTerm', {
+      get() {
+        return lastSearchTerm;
+      },
+      set(v) {
+        lastSearchTerm = v;
+      },
+      configurable: true,
+    });
+
+    Object.defineProperty(globalThis, 'selectedIndex', {
+      get() {
+        return selectedIndex;
+      },
+      set(v) {
+        selectedIndex = v;
+      },
+      configurable: true,
+    });
+  } catch (e) {
+    // Ignore if property can't be defined
+  }
+}
 
 // --- Animation Manager ---
 const animationManager = new WeatherAnimationManager();
@@ -339,10 +384,10 @@ function createCityCard(cityData) {
   const feelsLike = weather.hourly.apparent_temperature?.[currentHourIndex];
   const windSpeed = weather.hourly.wind_speed_10m?.[currentHourIndex];
   const windDirection = weather.hourly.wind_direction_10m?.[currentHourIndex];
-  const uvIndex = weather.daily.uv_index_max?.[0] || 0;
+  const uvIndex = weather.daily?.uv_index_max?.[0] || 0;
   const uvRec = getUVRecommendation(uvIndex);
-  const sunrise = weather.daily.sunrise?.[0];
-  const sunset = weather.daily.sunset?.[0];
+  const sunrise = weather.daily?.sunrise?.[0];
+  const sunset = weather.daily?.sunset?.[0];
 
   const card = document.createElement('div');
   card.className = 'col';
@@ -2648,3 +2693,45 @@ if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
   });
 }
 /* eslint-enable no-inner-declarations */
+
+// Export selected functions for tests and external modules
+export {
+  fetchJson,
+  saveToSessionStorage,
+  getFromSessionStorage,
+  loadCities,
+  fetchWeather,
+  fetchGeocodingData,
+  fetchWeatherData,
+  createCityCard,
+  getIcon as getWeatherIcon,
+  getDescription as getWeatherDescription,
+  handleSearch,
+  isCityAlreadyDisplayed,
+  addNewCityToStorage,
+  showAutocompleteSuggestions,
+  updateSelectedSuggestion,
+};
+
+// Attach commonly-used functions to globalThis/window for tests that spy on globals
+if (typeof globalThis !== 'undefined') {
+  try {
+    globalThis.fetchJson = fetchJson;
+    globalThis.saveToSessionStorage = saveToSessionStorage;
+    globalThis.getFromSessionStorage = getFromSessionStorage;
+    globalThis.loadCities = loadCities;
+    globalThis.fetchWeather = fetchWeather;
+    globalThis.fetchGeocodingData = fetchGeocodingData;
+    globalThis.fetchWeatherData = fetchWeatherData;
+    globalThis.createCityCard = createCityCard;
+    globalThis.getWeatherIcon = getIcon;
+    globalThis.getWeatherDescription = getDescription;
+    globalThis.handleSearch = handleSearch;
+    globalThis.isCityAlreadyDisplayed = isCityAlreadyDisplayed;
+    globalThis.addNewCityToStorage = addNewCityToStorage;
+    globalThis.showAutocompleteSuggestions = showAutocompleteSuggestions;
+    globalThis.updateSelectedSuggestion = updateSelectedSuggestion;
+  } catch (e) {
+    // ignore failures in non-browser environments
+  }
+}

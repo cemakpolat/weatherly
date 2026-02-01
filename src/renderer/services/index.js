@@ -27,6 +27,7 @@ export { SearchManager } from './SearchManager.js';
 export { ThemeManager } from './ThemeManager.js';
 export { MasonryLayoutManager } from './MasonryLayoutManager.js';
 export { DragDropManager } from './DragDropManager.js';
+export { DynamicBackgroundManager } from './DynamicBackgroundManager.js';
 
 // Location Services
 export { GeolocationManager } from './GeolocationManager.js';

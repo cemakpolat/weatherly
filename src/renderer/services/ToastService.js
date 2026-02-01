@@ -30,7 +30,7 @@ export class ToastService {
    * @returns {HTMLElement} The toast container element.
    */
   static #getContainer() {
-    if (!ToastService.#container) {
+    if (!ToastService.#container || !document.body.contains(ToastService.#container)) {
       ToastService.initialize();
     }
     return ToastService.#container;

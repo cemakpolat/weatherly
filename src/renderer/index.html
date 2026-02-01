@@ -361,7 +361,28 @@
                 </h4>
                 <p class="text-muted small mb-3">Choose a background theme for the app</p>
 
-                <div class="theme-grid">
+                <!-- Dynamic Weather-based Backgrounds Toggle -->
+                <div class="settings-option mb-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <label for="dynamic-backgrounds-toggle" class="form-label mb-0">
+                        <i class="fas fa-cloud-sun me-2"></i>Dynamic Weather Backgrounds
+                      </label>
+                      <div class="small text-muted">
+                        Background changes based on current weather (Apple Weather style)
+                      </div>
+                    </div>
+                    <div class="form-check form-switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="dynamic-backgrounds-toggle"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="theme-grid" id="static-theme-grid">
                   <div class="theme-option" data-theme="purple-blue">
                     <div
                       class="theme-preview"
@@ -442,6 +463,30 @@
                     <span class="theme-name">Cool Mint</span>
                     <i class="fas fa-check theme-check"></i>
                   </div>
+                </div>
+              </div>
+
+              <!-- Data Management Section -->
+              <div class="settings-section mt-4">
+                <h4 class="settings-section-title">
+                  <i class="fas fa-database me-2"></i>
+                  Data Management
+                </h4>
+                <p class="text-muted small mb-3">
+                  Export, import, or reset your settings and saved cities
+                </p>
+
+                <div class="d-grid gap-2">
+                  <button class="btn btn-outline-primary" id="export-settings-btn">
+                    <i class="fas fa-download me-2"></i>Export Settings
+                  </button>
+                  <button class="btn btn-outline-primary" id="import-settings-btn">
+                    <i class="fas fa-upload me-2"></i>Import Settings
+                  </button>
+                  <input type="file" id="import-settings-file" accept=".json" class="d-none" />
+                  <button class="btn btn-outline-danger" id="reset-settings-btn">
+                    <i class="fas fa-rotate-right me-2"></i>Reset to Defaults
+                  </button>
                 </div>
               </div>
 

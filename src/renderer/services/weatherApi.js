@@ -62,7 +62,12 @@ export async function fetchWeatherData(latitude, longitude) {
  * @returns {Promise<{ name: string, country_code: string, weather: object }|null>} - The weather data or null.
  */
 export async function fetchWeather(city) {
-  return await defaultWeatherService.getWeatherByCity(city);
+  try {
+    return await defaultWeatherService.getWeatherByCity(city);
+  } catch (error) {
+    console.error(error.message || error);
+    return null;
+  }
 }
 
 /**

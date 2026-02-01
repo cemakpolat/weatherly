@@ -5,6 +5,38 @@ import { TextEncoder, TextDecoder } from 'util';
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 
+// Configure JSDOM to not load external resources
+const { ResourceLoader } = require('jsdom');
+class NoOpResourceLoader extends ResourceLoader {
+  fetch() {
+    return Promise.resolve(null);
+  }
+}
+global.resourceLoader = new NoOpResourceLoader();
+
+// Suppress JSDOM errors about loading external resources
+const originalConsoleError = console.error;
+console.error = (...args) => {
+  const message = args[0];
+  if (
+    typeof message === 'string' &&
+    (message.includes('Error: Could not load') ||
+     message.includes('Encoding not recognized') ||
+     message.includes('Cannot log after tests are done'))
+  ) {
+    return; // Suppress these errors
+  }
+  originalConsoleError(...args);
+};
+
+// Suppress all console outputs during tests to avoid clutter
+const originalConsoleLog = console.log;
+const originalConsoleWarn = console.warn;
+
+console.log = jest.fn();
+console.warn = jest.fn();
+console.error = jest.fn();
+
 // Mock Electron's ipcRenderer
 jest.mock('electron', () => {
   return {
@@ -48,3 +80,20 @@ const sessionStorageMock = (() => {
 Object.defineProperty(window, 'sessionStorage', {
   value: sessionStorageMock,
 });
+
+// Mock window.matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(), // Deprecated
+    removeListener: jest.fn(), // Deprecated
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
+
+// (No polyfills for CSSStyleDeclaration.background — keep JSDOM defaults)

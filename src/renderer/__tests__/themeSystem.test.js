@@ -19,12 +19,26 @@ describe('Theme System', () => {
 
   beforeEach(() => {
     // Reset DOM
-    document.body.innerHTML = `
-      <div class="theme-option" data-theme="purple-blue"></div>
-      <div class="theme-option" data-theme="ocean-breeze"></div>
-      <div class="theme-option" data-theme="sunset-glow"></div>
-      <div class="theme-option" data-theme="forest-green"></div>
-    `;
+    document.body.innerHTML = '';
+    const purpleOption = document.createElement('div');
+    purpleOption.classList.add('theme-option');
+    purpleOption.setAttribute('data-theme', 'purple-blue');
+    document.body.appendChild(purpleOption);
+
+    const oceanOption = document.createElement('div');
+    oceanOption.classList.add('theme-option');
+    oceanOption.setAttribute('data-theme', 'ocean-breeze');
+    document.body.appendChild(oceanOption);
+
+    const sunsetOption = document.createElement('div');
+    sunsetOption.classList.add('theme-option');
+    sunsetOption.setAttribute('data-theme', 'sunset-glow');
+    document.body.appendChild(sunsetOption);
+
+    const forestOption = document.createElement('div');
+    forestOption.classList.add('theme-option');
+    forestOption.setAttribute('data-theme', 'forest-green');
+    document.body.appendChild(forestOption);
 
     // Clear all mocks
     jest.clearAllMocks();
@@ -81,8 +95,9 @@ describe('Theme System', () => {
     test('should add active class to selected theme option', () => {
       applyTheme('sunset-glow');
 
-      const sunsetOption = document.querySelector('[data-theme="sunset-glow"]');
-      expect(sunsetOption.classList.contains('active')).toBe(true);
+      const activeOptions = document.querySelectorAll('.theme-option.active');
+      expect(activeOptions.length).toBe(1);
+      expect(activeOptions[0].getAttribute('data-theme')).toBe('sunset-glow');
     });
 
     test('should remove active class from other theme options', () => {
@@ -248,8 +263,9 @@ describe('Theme System', () => {
 
       await loadAndApplyTheme();
 
-      const forestOption = document.querySelector('[data-theme="forest-green"]');
-      expect(forestOption.classList.contains('active')).toBe(true);
+      const activeOptions = document.querySelectorAll('.theme-option.active');
+      expect(activeOptions.length).toBe(1);
+      expect(activeOptions[0].getAttribute('data-theme')).toBe('forest-green');
     });
 
     test('should handle null theme gracefully', async () => {

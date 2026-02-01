@@ -26,6 +26,9 @@ export class SettingsManager {
       animationPreferences: {
         enabled: true,
       },
+      dynamicBackgrounds: {
+        enabled: false,
+      },
       weatherAlerts: {
         enabled: true,
         thunderstorm: true,
@@ -208,6 +211,23 @@ export class SettingsManager {
   }
 
   /**
+   * Gets dynamic background preferences.
+   * @returns {Promise<object>} - Dynamic background preferences.
+   */
+  static async getDynamicBackgrounds() {
+    const settings = await SettingsManager.read();
+    return settings.dynamicBackgrounds || SettingsManager.defaultSettings.dynamicBackgrounds;
+  }
+
+  /**
+   * Sets dynamic background preferences.
+   * @param {object} prefs - Dynamic background preferences.
+   */
+  static async setDynamicBackgrounds(prefs) {
+    return SettingsManager.set('dynamicBackgrounds', prefs);
+  }
+
+  /**
    * Gets weather alert preferences.
    * @returns {Promise<object>} - Weather alert preferences.
    */
@@ -282,6 +302,77 @@ export class SettingsManager {
    */
   static clearCache() {
     SettingsManager.#cache = null;
+  }
+
+  /**
+   * Exports settings as a JSON file.
+   * @returns {Promise<void>}
+   */
+  static async exportSettings() {
+    try {
+      const settings = await SettingsManager.read(false);
+      const dataStr = JSON.stringify(settings, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `atmos-sphere-settings-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      console.log('Settings exported successfully');
+      return true;
+    } catch (error) {
+      console.error('Error exporting settings:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Imports settings from a JSON file.
+   * @param {File} file - The file to import.
+   * @returns {Promise<boolean>} - True if successful.
+   */
+  static async importSettings(file) {
+    try {
+      const text = await file.text();
+      const importedSettings = JSON.parse(text);
+      
+      // Validate settings structure
+      if (typeof importedSettings !== 'object' || importedSettings === null) {
+        throw new Error('Invalid settings format');
+      }
+      
+      // Merge with defaults to ensure all required fields exist
+      const validatedSettings = { ...SettingsManager.defaultSettings, ...importedSettings };
+      
+      // Write the settings
+      await SettingsManager.write(validatedSettings);
+      
+      console.log('Settings imported successfully');
+      return true;
+    } catch (error) {
+      console.error('Error importing settings:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Resets all settings to defaults.
+   * @returns {Promise<boolean>} - True if successful.
+   */
+  static async resetToDefaults() {
+    try {
+      await SettingsManager.write({ ...SettingsManager.defaultSettings });
+      console.log('Settings reset to defaults');
+      return true;
+    } catch (error) {
+      console.error('Error resetting settings:', error);
+      return false;
+    }
   }
 }
 

@@ -101,6 +101,19 @@ export class TemperatureService {
   }
 
   /**
+   * Formats an array of temperatures.
+   * @param {number[]} temperatures - Array of temperatures in Celsius.
+   * @param {string} unit - Optional override for unit.
+   * @returns {string[]} - Array of formatted temperature strings.
+   */
+  static formatArray(temperatures, unit = TemperatureService.#currentUnit) {
+    if (!Array.isArray(temperatures)) {
+      return [];
+    }
+    return temperatures.map(temp => TemperatureService.format(temp, unit));
+  }
+
+  /**
    * Toggles between Celsius and Fahrenheit.
    * @returns {string} - The new current unit.
    */

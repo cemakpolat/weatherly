@@ -35,11 +35,19 @@ export function formatTemperature(celsius, unit = 'celsius') {
 export function getCurrentHourIndex(times) {
   const now = new Date();
   const currentHour = now.getHours();
+
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
   const currentDate = now.getDate();
 
   const index = times.findIndex(time => {
     const timeDate = new Date(time);
-    return timeDate.getHours() === currentHour && timeDate.getDate() === currentDate;
+    return (
+      timeDate.getHours() === currentHour &&
+      timeDate.getFullYear() === currentYear &&
+      timeDate.getMonth() === currentMonth &&
+      timeDate.getDate() === currentDate
+    );
   });
 
   return index !== -1 ? index : 0;

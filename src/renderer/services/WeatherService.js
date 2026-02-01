@@ -113,7 +113,15 @@ export class WeatherService {
   constructor(providerType = WeatherProviderType.OPEN_METEO) {
     this.#providerType = providerType;
     this.#provider = WeatherProviderFactory.createProvider(providerType);
-    console.log(`WeatherService initialized with provider: ${this.#provider.getProviderName()}`);
+    try {
+      if (this.#provider && typeof this.#provider.getProviderName === 'function') {
+        console.log(`WeatherService initialized with provider: ${this.#provider.getProviderName()}`);
+      } else {
+        console.log('WeatherService initialized with provider: (unknown)');
+      }
+    } catch (e) {
+      console.log('WeatherService initialized (provider name unavailable)');
+    }
   }
 
   /**
@@ -139,7 +147,15 @@ export class WeatherService {
   switchProvider(providerType) {
     this.#providerType = providerType;
     this.#provider = WeatherProviderFactory.createProvider(providerType);
-    console.log(`Switched to provider: ${this.#provider.getProviderName()}`);
+    try {
+      if (this.#provider && typeof this.#provider.getProviderName === 'function') {
+        console.log(`Switched to provider: ${this.#provider.getProviderName()}`);
+      } else {
+        console.log('Switched to provider: (unknown)');
+      }
+    } catch (e) {
+      console.log('Switched to provider (provider name unavailable)');
+    }
   }
 
   /**
@@ -148,7 +164,37 @@ export class WeatherService {
    * @returns {Promise<import('./providers/IWeatherProvider.js').CityWeatherResult|null>}
    */
   async getWeatherByCity(cityName) {
-    return await this.#provider.getWeatherByCity(cityName);
+    // Prefer provider-level implementation if available
+    if (this.#provider && typeof this.#provider.getWeatherByCity === 'function') {
+      const result = await this.#provider.getWeatherByCity(cityName);
+      if (result) {
+        return result;
+      }
+      // if provider method exists but returned falsy, fall through to fallback flow
+    }
+
+    // Fallback: attempt to geocode then fetch by coordinates
+    try {
+      const geocoding = await this.#provider.geocodeCity?.(cityName);
+      if (!geocoding) {
+        throw new Error(`Weather data not available for ${cityName}`);
+      }
+      const weatherData = await this.#provider.getWeatherByCoordinates?.(
+        geocoding.latitude,
+        geocoding.longitude
+      );
+      if (!weatherData) {
+        throw new Error(`Weather data not available for ${cityName}`);
+      }
+      return {
+        name: geocoding.name,
+        country_code: geocoding.country_code,
+        weather: weatherData,
+      };
+    } catch (e) {
+      // Normalize errors to a consistent message for callers/tests
+      throw new Error(`Weather data not available for ${cityName}`);
+    }
   }
 
   /**
@@ -158,7 +204,14 @@ export class WeatherService {
    * @returns {Promise<import('./providers/IWeatherProvider.js').WeatherData|null>}
    */
   async getWeatherByCoordinates(latitude, longitude) {
-    return await this.#provider.getWeatherByCoordinates(latitude, longitude);
+    if (latitude == null || longitude == null || isNaN(latitude) || isNaN(longitude)) {
+      throw new Error('Invalid coordinates');
+    }
+    const result = await this.#provider.getWeatherByCoordinates(latitude, longitude);
+    if (!result) {
+      throw new Error('Weather data not available for coordinates');
+    }
+    return result;
   }
 
   /**
